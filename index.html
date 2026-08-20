@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel Financeiro · Consulting Framework</title>
+<style>
+:root{
+  --preto:#000; --carvao:#0e0e0e; --grafite:#171717; --linha:#282828; --linha2:#1d1d1d;
+  --cinza:#EDEFF0; --medio:#a8abad; --fraco:#7e8183;
+  --verde:#44CF17; --verdebg:#123006; --vermelho:#f0605f; --vermelhobg:#2e1010;
+  --ambar:#F5A623; --ambarbg:#2e1f06; --azul:#4E9AE8;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--preto);color:var(--cinza);font-family:var(--sans);font-size:15px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font-family:inherit;font-size:14px}
+button{cursor:pointer}
+.rotulo{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--fraco)}
+.q{display:inline-block;width:9px;height:9px;background:var(--verde);margin-right:10px;flex:none}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.pos{color:var(--verde)} .neg{color:var(--vermelho)} .av{color:var(--ambar)}
+.oculto{display:none !important}
+
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.cxlogin{width:100%;max-width:370px;border:1px solid var(--linha);background:var(--carvao);padding:36px 32px}
+.cxlogin h1{font-size:21px;font-weight:600;margin:14px 0 4px}
+.cxlogin p{font-size:14px;color:var(--medio);margin-bottom:22px}
+.campo{margin-bottom:12px}
+.campo label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fraco);margin-bottom:5px}
+input,select,textarea{width:100%;background:var(--grafite);border:1px solid var(--linha);color:var(--cinza);padding:9px 11px;border-radius:0}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--verde)}
+.btn{background:var(--verde);color:#000;border:none;padding:10px 18px;font-weight:600;font-size:13.5px}
+.btn:hover{filter:brightness(1.12)}
+.btn:disabled{opacity:.5;cursor:wait}
+.btnv{background:transparent;color:var(--cinza);border:1px solid var(--linha);padding:8px 14px;font-size:13.5px}
+.btnv:hover{border-color:var(--verde);color:var(--verde)}
+.erro{background:var(--vermelhobg);border:1px solid var(--vermelho);color:#ffc4c4;padding:9px 12px;font-size:13.5px;margin-top:12px}
+
+header{border-bottom:1px solid var(--linha);background:var(--carvao);position:sticky;top:0;z-index:20}
+.topo{max-width:1320px;margin:0 auto;padding:13px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.marca{display:flex;align-items:center;gap:10px;margin-right:auto}
+.marca img{height:28px}
+.marca .nome{font-weight:600;font-size:15.5px}
+header select{width:auto;padding:6px 10px;font-family:var(--mono);font-size:12.5px}
+nav{border-bottom:1px solid var(--linha);overflow-x:auto}
+.abas{max-width:1320px;margin:0 auto;padding:0 22px;display:flex;gap:2px}
+.abas button{background:none;border:none;border-bottom:2px solid transparent;color:var(--fraco);padding:12px 15px;
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.abas button.on{color:var(--verde);border-bottom-color:var(--verde)}
+.abas button:hover{color:var(--cinza)}
+main{max-width:1320px;margin:0 auto;padding:24px 22px 90px}
+h2{font-size:13px;font-family:var(--mono);letter-spacing:.11em;text-transform:uppercase;font-weight:400;
+  display:flex;align-items:center;margin:30px 0 12px;color:var(--medio)}
+h2:first-child{margin-top:0}
+
+.grade{display:grid;gap:12px}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.cartao{background:var(--carvao);border:1px solid var(--linha);padding:17px}
+
+.hero{background:var(--carvao);border:1px solid var(--linha);padding:20px 20px 20px 24px;position:relative}
+.hero .t{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fraco);margin-bottom:9px}
+.hero .v{font-family:var(--mono);font-size:33px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.12}
+.hero .s{font-size:12.5px;color:var(--medio);margin-top:7px}
+.hero.big{border-color:var(--verde)}
+.hero .faixa{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--verde)}
+.hero.r .faixa{background:var(--vermelho)} .hero.b .faixa{background:var(--azul)}
+.hero .quebra{margin-top:11px;padding-top:10px;border-top:1px solid var(--linha2);display:flex;flex-direction:column;gap:4px}
+.hero .quebra div{display:flex;justify-content:space-between;font-size:12.5px}
+.hero .quebra span:last-child{font-family:var(--mono)}
+
+.kpi{background:var(--carvao);border:1px solid var(--linha);padding:15px 16px}
+.kpi.clic{cursor:pointer} .kpi.clic:hover{border-color:var(--verde)}
+.kpi .t{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--fraco);margin-bottom:6px}
+.kpi .v{font-family:var(--mono);font-size:23px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12.5px;color:var(--medio);margin-top:4px}
+
+.barra{height:9px;background:var(--grafite);overflow:hidden;margin-top:8px}
+.barra i{display:block;height:100%;background:var(--verde);transition:width .3s}
+.barra.r i{background:var(--vermelho)} .barra.a i{background:var(--ambar)}
+
+.combo{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,320px);gap:22px;align-items:center}
+@media(max-width:860px){.combo{grid-template-columns:1fr}}
+.leg{display:flex;flex-direction:column}
+.leg .it{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--linha2)}
+.leg .it:last-child{border-bottom:none}
+.leg .it.sub{padding-left:21px;font-size:12.5px;color:var(--medio)}
+.leg .pt{width:11px;height:11px;flex:none}
+.leg .nm{flex:1;font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.leg .vl{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.leg .pc{font-family:var(--mono);font-size:11.5px;color:var(--fraco);width:46px;text-align:right}
+.leg .tot{display:flex;justify-content:space-between;padding-top:11px;margin-top:7px;border-top:1px solid var(--linha);font-family:var(--mono);font-size:14.5px}
+.grafico{position:relative;height:280px}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--fraco);
+  text-align:left;padding:9px 10px;border-bottom:1px solid var(--linha);font-weight:400;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--linha2);vertical-align:middle}
+tbody tr:hover{background:var(--grafite)}
+td.d,th.d{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.nome{min-width:230px;white-space:nowrap}
+tr.matriz td{background:var(--grafite);font-weight:600;border-bottom:1px solid var(--linha)}
+tr.filho td:first-child{padding-left:26px;color:var(--medio)}
+.rolagem{overflow-x:auto}
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;
+  padding:3px 8px;border:1px solid var(--linha);color:var(--fraco);white-space:nowrap;background:none}
+.tag.ok{color:var(--verde);border-color:#255a10;background:var(--verdebg)}
+.tag.mal{color:var(--vermelho);border-color:#5a1a1a;background:var(--vermelhobg)}
+.tag.al{color:var(--ambar);border-color:#5a4010;background:var(--ambarbg)}
+.x{background:none;border:none;color:#555;font-size:16px;padding:0 5px}
+.x:hover{color:var(--vermelho)}
+.ed{background:transparent;border:1px solid transparent;color:var(--cinza);padding:4px 6px;width:100%;font-size:14px}
+.ed:hover{border-color:var(--linha);background:var(--grafite)}
+.ed:focus{border-color:var(--verde);background:var(--grafite);outline:none}
+.ed.n{font-family:var(--mono);text-align:right;min-width:0;-moz-appearance:textfield}
+.ed.n::-webkit-outer-spin-button,.ed.n::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+table.revisar td{padding:9px 12px} table.revisar th{padding:10px 12px}
+table.revisar td.nome{min-width:250px}
+
+.ed.dt{font-family:var(--mono);width:140px}
+.ed.nm{min-width:220px}
+select.ed{width:auto;min-width:110px}
+
+.alerta{display:flex;gap:11px;padding:13px 15px;border-left:3px solid var(--linha);background:var(--grafite);
+  margin-bottom:8px;font-size:14px;line-height:1.65}
+.alerta.critico,.alerta.r{border-left-color:var(--vermelho)}
+.alerta.atencao,.alerta.a{border-left-color:var(--ambar)}
+.alerta.bom,.alerta.v{border-left-color:var(--verde)}
+.alerta.info,.alerta.b{border-left-color:var(--azul)}
+.alerta .acao{display:block;margin-top:7px;padding-top:7px;border-top:1px solid var(--linha);
+  font-size:13px;color:var(--medio)}
+.alerta .acao b{color:var(--verde);font-weight:600}
+.linhafina{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--grafite);
+  border-left:3px solid var(--verde);padding:12px 15px;font-size:14px;flex-wrap:wrap}
+.formlinha{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.formlinha .campo{margin:0;flex:1;min-width:130px}
+.vazio{text-align:center;color:var(--fraco);padding:28px 14px;font-size:13.5px}
+.nota{font-size:12.5px;color:var(--fraco);margin-top:10px;line-height:1.65}
+footer{border-top:1px solid var(--linha);padding:20px;text-align:center}
+.sem{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.sem .c{background:var(--grafite);padding:12px 13px}
+.sem .c .lb{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--fraco)}
+.sem .c .vv{font-family:var(--mono);font-size:18px;margin-top:5px}
+.sem .c .pp{font-family:var(--mono);font-size:11px;color:var(--fraco);margin-top:4px}
+.sem .c input{background:transparent;border:1px solid transparent;color:var(--medio);font-family:var(--mono);
+  font-size:11px;padding:1px 3px;width:88px;text-align:right}
+.sem .c input:hover{border-color:var(--linha)} .sem .c input:focus{border-color:var(--verde);outline:none}
+.girando{display:inline-block;width:12px;height:12px;border:2px solid var(--linha);border-top-color:var(--verde);
+  border-radius:50%;animation:g .7s linear infinite;vertical-align:-2px;margin-right:7px}
+@keyframes g{to{transform:rotate(360deg)}}
+.cabecalho{width:100%;background:none;border:none;color:var(--cinza);display:flex;align-items:center;gap:12px;padding:15px 17px;text-align:left}
+.cabecalho:hover{background:var(--grafite)}
+.seta{color:var(--fraco);font-size:13px;transition:transform .15s;flex:none}
+.seta.on{transform:rotate(90deg);color:var(--verde)}
+.corpo{padding:0 17px 17px;border-top:1px solid var(--linha)}
+table.contratos,table.receb{table-layout:fixed;width:100%}
+table.contratos td,table.receb td{padding:8px 9px}
+table.contratos th,table.receb th{padding:9px}
+table.contratos td.nome,table.receb td.nome{min-width:0;width:auto;white-space:normal}
+td .sub{display:flex;align-items:center;gap:5px;margin-top:3px;font-family:var(--mono);
+  font-size:10px;letter-spacing:.04em;color:var(--fraco);flex-wrap:wrap}
+.ed.mudo{color:var(--fraco);font-size:10px;font-family:var(--mono);padding:1px 3px;min-width:0}
+.ed.mudo:hover{color:var(--cinza)}
+select.ed.mudo{width:auto;min-width:0;max-width:170px}
+th.acoes,td.acoes{width:132px;text-align:right;white-space:nowrap}
+table.contratos th.d:nth-child(2),table.contratos td.d:nth-child(2){width:120px}
+table.contratos th.d:nth-child(3),table.contratos td.d:nth-child(3),
+table.contratos th.d:nth-child(4),table.contratos td.d:nth-child(4){width:96px}
+table.contratos th.d:nth-child(5),table.contratos td.d:nth-child(5){width:74px}
+table.contratos th:nth-child(6),table.contratos td:nth-child(6){width:150px}
+table.contratos th:nth-child(7),table.contratos td:nth-child(7){width:132px}
+table.receb th:nth-child(2),table.receb td:nth-child(2){width:78px}
+table.recebido{table-layout:fixed;width:100%}
+table.recebido td{padding:8px 9px} table.recebido th{padding:9px}
+table.recebido th:nth-child(2),table.recebido td:nth-child(2){width:170px}
+table.recebido th:nth-child(3),table.recebido td:nth-child(3){width:130px}
+table.desp{table-layout:fixed;width:100%} table.desp td{padding:7px 9px} table.desp th{padding:9px}
+table.desp th:nth-child(1),table.desp td:nth-child(1){width:170px}
+table.desp th:nth-child(3),table.desp td:nth-child(3){width:150px}
+table.desp th:nth-child(4),table.desp td:nth-child(4){width:96px}
+table.desp th:nth-child(5),table.desp td:nth-child(5){width:126px}
+table.cats{table-layout:fixed;width:100%} table.cats td{padding:7px 9px} table.cats th{padding:9px}
+table.cats th:nth-child(2),table.cats td:nth-child(2){width:130px}
+table.cats th:nth-child(3),table.cats td:nth-child(3){width:230px}
+.corpo>.formlinha:first-child{padding-top:14px}
+.ed.lim{width:100%;max-width:118px} .ed.mini{width:100%;max-width:64px}
+.ed.dt{width:100%;max-width:142px}
+@media(max-width:900px){table.contratos,table.receb{table-layout:auto}
+  .cartao>table{display:block;overflow-x:auto}}
+.dropzona{border:1px dashed var(--linha);padding:22px;text-align:center;color:var(--fraco);font-size:13.5px}
+.dropzona.ativo{border-color:var(--verde);color:var(--verde)}
+.miniaturas{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.miniaturas img{height:74px;border:1px solid var(--linha)}
+@media print{
+  body{background:#fff;color:#000}
+  header,nav,footer,.btn,.btnv,.x,#filtros,.nota{display:none !important}
+  .cartao{border:1px solid #ccc;background:#fff;break-inside:avoid}
+  table{font-size:11px} th,td{color:#000;border-color:#ddd}
+  .tag{color:#000;border-color:#999}
+  h2{color:#000} .rotulo{color:#444}
+}
+@media(max-width:640px){.hero .v{font-size:27px}.kpi .v{font-size:21px}main{padding:18px 14px 70px}
+  .topo,.abas{padding-left:14px;padding-right:14px}}
+</style>
+</head>
+<body>
+
+<div id="conexao" class="oculto"><div class="cxlogin">
+  <div class="rotulo"><span class="q"></span>Primeiro acesso</div>
+  <h1>Conectar ao seu banco</h1>
+  <p>Cole os dois dados do seu projeto Supabase. Eles ficam salvos neste navegador e você não precisa fazer isso de novo.</p>
+  <div class="campo"><label for="cxUrl">Project URL</label><input id="cxUrl" placeholder="https://xxxxx.supabase.co"></div>
+  <div class="campo"><label for="cxKey">Chave pública (publishable ou anon)</label><input id="cxKey" placeholder="sb_publishable_... ou eyJ..."></div>
+  <button class="btn" onclick="salvarConexao()" style="width:100%;margin-top:8px">Conectar</button>
+  <div id="erroConexao" class="erro oculto"></div>
+  <p class="nota">No Supabase: menu lateral, <strong>Project Settings</strong>, depois <strong>API Keys</strong>. Copie a Project URL e a chave pública. Nunca use a chave <em>service_role</em>.</p>
+</div></div>
+
+<div id="login" class="oculto"><div class="cxlogin">
+  <div class="rotulo"><span class="q"></span>Consulting Framework</div>
+  <h1>Painel financeiro</h1>
+  <p>Entre para ver e lançar os números.</p>
+  <div class="campo"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username"></div>
+  <div class="campo"><label for="senha">Senha</label><input id="senha" type="password" autocomplete="current-password"></div>
+  <button class="btn" id="btEntrar" style="width:100%;margin-top:8px">Entrar</button>
+  <div id="erroLogin" class="erro oculto"></div>
+</div></div>
+
+<div id="app" class="oculto">
+<header><div class="topo">
+  <div class="marca"><img id="logoTopo" class="oculto" alt=""><span class="q" id="qTopo"></span><span class="nome" id="nomeNegocio">Painel RHINO</span></div>
+  <select id="selMes" aria-label="Mês"></select>
+  <button class="btnv" onclick="trocarConexao()" title="Esquecer este banco neste navegador">Desconectar</button>
+  <button class="btnv" id="btSair">Sair</button>
+</div></header>
+<nav><div class="abas" id="abas">
+  <button data-a="dash" class="on">Dashboard</button>
+  <button data-a="contr">Contratos</button>
+  <button data-a="receb">Recebíveis</button>
+  <button data-a="desp">Despesas</button>
+  <button data-a="lanc">Lançamentos</button>
+  <button data-a="cart">Cartões</button>
+  <button data-a="inv">Investimentos</button>
+  <button data-a="conf">Configurações</button>
+</div></nav>
+<main>
+  <section id="v-dash"></section><section id="v-contr" class="oculto"></section>
+  <section id="v-receb" class="oculto"></section><section id="v-desp" class="oculto"></section>
+  <section id="v-lanc" class="oculto"></section><section id="v-cart" class="oculto"></section>
+  <section id="v-inv" class="oculto"></section><section id="v-conf" class="oculto"></section>
+</main>
+<footer><div class="rotulo" id="rodape">Consulting Framework · RHINO</div>
+  <div class="rotulo" style="font-size:9px;margin-top:5px;opacity:.6">H M DE SOUZA SERVIÇOS FITNESS LTDA</div></footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* A conexao com o seu Supabase e pedida na primeira vez e fica guardada
+   neste navegador. Voce nao precisa editar nada neste arquivo. */
+const CFG_CHAVE='painel_conexao';
+function lerConexao(){
+  try{const c=JSON.parse(localStorage.getItem(CFG_CHAVE)||'null');
+      return (c&&c.url&&c.key)?c:null;}catch{return null}
+}
+let CONEXAO=lerConexao();
+let SUPABASE_URL=CONEXAO?CONEXAO.url:'';
+let SUPABASE_KEY=CONEXAO?CONEXAO.key:'';
+let sb=CONEXAO?supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
+
+function salvarConexao(){
+  const url=document.getElementById('cxUrl').value.trim().replace(/\/+$/,'');
+  const key=document.getElementById('cxKey').value.trim();
+  const cx=document.getElementById('erroConexao'); cx.classList.add('oculto');
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){
+    cx.textContent='A URL deve ser parecida com https://abcdefgh.supabase.co';
+    cx.classList.remove('oculto'); return;}
+  if(key.length<20){cx.textContent='A chave parece curta demais. Copie a chave publishable ou anon inteira.';
+    cx.classList.remove('oculto'); return;}
+  localStorage.setItem(CFG_CHAVE,JSON.stringify({url,key}));
+  location.reload();
+}
+function trocarConexao(){
+  if(!confirm('Desconectar deste banco? Seus dados continuam no Supabase, só este navegador esquece o endereço.'))return;
+  localStorage.removeItem(CFG_CHAVE); location.reload();
+}
+
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const MESC=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const CORES=['#44CF17','#4E9AE8','#7F77DD','#F5A623','#f0605f','#1baf7a','#D4537E','#8a8d8f','#eb6834','#4a3aa7'];
+const HOJE=new Date();
+let MES=HOJE.getMonth(), ANO=HOJE.getFullYear(), ABA='dash';
+let FILTRO={ini:'',fim:'',cat:'',tipo:''};
+let IA={estado:'ocioso',itens:[],erro:''};
+let PRINTS=[];
+let CART_ABERTO=null;
+let REC_ABERTO=null;
+let DESP_ABERTO=null;
+let CAT_ABERTO=null;
+let HIST_ABERTO=null;
+let D={config:{},produtos:[],clientes:[],contratos:[],parcelas:[],lancamentos:[],recorrencias:[],
+  cartoes:[],parcelamentos:[],assinaturas:[],metas_mes:[],investimentos:[],investimentos_hist:[],categorias:[],repasses:[],analises:[],planos:[]};
+const G={};
+
+const rs=v=>'R$ '+(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const rsc=v=>'R$ '+Math.round(Number(v)||0).toLocaleString('pt-BR');
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const chave=(a,m)=>`${a}-${String(m+1).padStart(2,'0')}`;
+const noMes=(s,a,m)=>{if(!s)return false;const[y,mm]=String(s).slice(0,10).split('-').map(Number);return y===a&&mm===m+1;};
+const dObj=s=>{const[y,m,d]=String(s).slice(0,10).split('-').map(Number);return new Date(y,m-1,d);};
+const dif=(a,b)=>(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth());
+const dias=v=>Math.floor((dObj(v)-HOJE)/86400000);
+const prod=id=>D.produtos.find(p=>p.id===id);
+const nomeProd=id=>prod(id)?.nome||'Sem produto';
+
+function toast(m,e){const t=document.createElement('div');t.textContent=m;
+t.style.cssText=`position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:${e?'#2e1010':'#123006'};border:1px solid ${e?'#f0605f':'#44CF17'};color:${e?'#ffc4c4':'#c7f0b0'};padding:11px 20px;font-size:13.5px;z-index:99;max-width:90vw`;
+document.body.appendChild(t);setTimeout(()=>t.remove(),3200);}
+
+/* ---------- login ---------- */
+if(!sb){document.getElementById('conexao').classList.remove('oculto');}
+else{document.getElementById('login').classList.remove('oculto');}
+document.getElementById('btEntrar').onclick=entrar;
+document.getElementById('senha').onkeydown=e=>{if(e.key==='Enter')entrar()};
+async function entrar(){
+  const email=document.getElementById('email').value.trim(), password=document.getElementById('senha').value;
+  const cx=document.getElementById('erroLogin'); cx.classList.add('oculto');
+  if(!email||!password){cx.textContent='Preencha e-mail e senha.';cx.classList.remove('oculto');return;}
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error){cx.textContent=error.message.includes('Invalid')?'E-mail ou senha incorretos.':error.message;cx.classList.remove('oculto');return;}
+  iniciar();
+}
+document.getElementById('btSair').onclick=async()=>{await sb.auth.signOut();location.reload()};
+if(sb) sb.auth.getSession().then(({data})=>{if(data.session)iniciar()});
+
+async function iniciar(){
+  document.getElementById('login').classList.add('oculto');
+  document.getElementById('conexao').classList.add('oculto');
+  document.getElementById('app').classList.remove('oculto');
+  const s=document.getElementById('selMes');
+  for(let i=-13;i<=4;i++){const d=new Date(HOJE.getFullYear(),HOJE.getMonth()+i,1);
+    const o=document.createElement('option');o.value=`${d.getFullYear()}-${d.getMonth()}`;
+    o.textContent=`${MESES[d.getMonth()]} ${d.getFullYear()}`;if(i===0)o.selected=true;s.appendChild(o);}
+  s.onchange=()=>{const[a,m]=s.value.split('-').map(Number);ANO=a;MES=m;IA={estado:'ocioso',itens:[],erro:''};HIST_ABERTO=null;desenhar()};
+  await carregar();
+}
+document.getElementById('abas').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  ABA=b.dataset.a;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+  ['dash','contr','receb','desp','lanc','cart','inv','conf'].forEach(k=>document.getElementById('v-'+k).classList.toggle('oculto',k!==ABA));
+  desenhar();};
+function irPara(a){document.querySelector(`#abas button[data-a="${a}"]`).click();window.scrollTo(0,0)}
+
+async function carregar(){
+  const t=['config','produtos','clientes','contratos','parcelas','lancamentos','recorrencias','cartoes',
+    'parcelamentos','assinaturas','metas_mes','investimentos','investimentos_hist','categorias','repasses','analises','planos'];
+  const r=await Promise.all(t.map(x=>sb.from(x).select('*')));
+  let faltou=[];
+  r.forEach((res,i)=>{if(res.error){faltou.push(t[i]);return;} D[t[i]]=res.data||[];});
+  D.config=(Array.isArray(D.config)&&D.config[0])||D.config||{};
+  D.produtos.sort((a,b)=>(a.ordem||0)-(b.ordem||0));
+  D.categorias.sort((a,b)=>(a.ordem||0)-(b.ordem||0));
+  D.planos.sort((a,b)=>(a.ordem||0)-(b.ordem||0));
+  if(faltou.length) toast('Rode o supabase-migracao-v4.sql. Faltando: '+faltou.join(', '),true);
+  marca();
+  if(!D.config.onboarding_ok){ABA='conf';
+    [...document.getElementById('abas').children].forEach(x=>x.classList.toggle('on',x.dataset.a==='conf'));
+    ['dash','contr','receb','desp','lanc','cart','inv','conf'].forEach(k=>
+      document.getElementById('v-'+k).classList.toggle('oculto',k!=='conf'));}
+  desenhar();
+}
+function marca(){
+  const c=D.config;
+  if(c.cor_primaria)document.documentElement.style.setProperty('--verde',c.cor_primaria);
+  if(c.cor_fundo)document.documentElement.style.setProperty('--preto',c.cor_fundo);
+  document.getElementById('nomeNegocio').textContent=c.negocio||'Painel RHINO';
+  document.getElementById('rodape').textContent='Consulting Framework · RHINO';
+  const i=document.getElementById('logoTopo');
+  if(c.logo_url){i.src=c.logo_url;i.classList.remove('oculto');document.getElementById('qTopo').classList.add('oculto');}
+  else{i.classList.add('oculto');document.getElementById('qTopo').classList.remove('oculto');}
+}
+
+/* ================= CATEGORIAS MATRIZ / FILHO ================= */
+const matrizes=tipo=>D.categorias.filter(c=>c.matriz&&c.tipo===tipo&&c.ativo!==false);
+const filhosDe=id=>D.categorias.filter(c=>c.parent_id===id&&c.ativo!==false);
+function catPorNome(n){return D.categorias.find(c=>c.nome===n)}
+function matrizDe(nomeCat){
+  const c=catPorNome(nomeCat); if(!c) return 'Sem categoria';
+  if(c.matriz) return c.nome;
+  return D.categorias.find(x=>x.id===c.parent_id)?.nome||c.nome;
+}
+function selCatAgrupado(sel,tipo){
+  let o='';
+  matrizes(tipo).forEach(m=>{
+    const f=filhosDe(m.id);
+    o+=`<optgroup label="${esc(m.nome)}">`;
+    o+=`<option value="${esc(m.nome)}"${m.nome===sel?' selected':''}>${esc(m.nome)} (geral)</option>`;
+    f.forEach(x=>{o+=`<option value="${esc(x.nome)}"${x.nome===sel?' selected':''}>${esc(x.nome)}</option>`});
+    o+='</optgroup>';
+  });
+  const soltas=D.categorias.filter(c=>!c.matriz&&!c.parent_id&&c.tipo===tipo);
+  if(soltas.length){o+='<optgroup label="Outras">'+soltas.map(x=>`<option value="${esc(x.nome)}"${x.nome===sel?' selected':''}>${esc(x.nome)}</option>`).join('')+'</optgroup>';}
+  if(sel&&!D.categorias.some(c=>c.nome===sel)) o=`<option value="${esc(sel)}" selected>${esc(sel)}</option>`+o;
+  return o||'<option value="Outros">Outros</option>';
+}
+function agrupaPorMatriz(porCat){
+  const g={};
+  Object.entries(porCat).forEach(([nome,v])=>{
+    const m=matrizDe(nome);
+    if(!g[m])g[m]={total:0,filhos:{}};
+    g[m].total+=v; g[m].filhos[nome]=(g[m].filhos[nome]||0)+v;
+  });
+  return Object.entries(g).sort((a,b)=>b[1].total-a[1].total);
+}
+
+/* ================= CÁLCULOS ================= */
+function caixaMes(a,m){
+  let t=0;const pp={};
+  D.parcelas.filter(p=>p.pago&&noMes(p.data_pagamento||p.vencimento,a,m)).forEach(p=>{
+    const c=D.contratos.find(x=>x.id===p.contrato_id);if(!c)return;
+    t+=+p.valor;pp[c.produto_id]=(pp[c.produto_id]||0)+ +p.valor;});
+  D.lancamentos.filter(l=>l.tipo==='entrada'&&l.pago&&noMes(l.data,a,m)).forEach(l=>{
+    t+=+l.valor;pp[l.produto_id]=(pp[l.produto_id]||0)+ +l.valor;});
+  return {total:t,pp};
+}
+function despesasMes(a,m){
+  let t=0;const pc={};
+  D.lancamentos.filter(l=>l.tipo==='despesa'&&noMes(l.data,a,m)).forEach(l=>{
+    t+=+l.valor;pc[l.categoria]=(pc[l.categoria]||0)+ +l.valor;});
+  return {total:t,pc};
+}
+const aPagar=(a,m)=>D.lancamentos.filter(l=>l.tipo==='despesa'&&!l.pago&&noMes(l.data,a,m)).reduce((s,l)=>s+ +l.valor,0);
+const pagoMes=(a,m)=>D.lancamentos.filter(l=>l.tipo==='despesa'&&l.pago&&noMes(l.data,a,m)).reduce((s,l)=>s+ +l.valor,0);
+function faturaCartao(id,a,m){
+  const ref=new Date(a,m,1);let t=0;
+  D.parcelamentos.filter(p=>p.cartao_id===id).forEach(p=>{
+    const n=dif(dObj(p.primeira_competencia),ref);if(n>=0&&n<p.total_parcelas)t+=+p.valor_parcela;});
+  D.assinaturas.filter(x=>x.cartao_id===id&&x.ativo!==false).forEach(x=>t+=+x.valor);
+  return t;
+}
+const faturaTotal=(a,m)=>D.cartoes.reduce((s,c)=>s+faturaCartao(c.id,a,m),0);
+const impostoMes=()=>(+D.config.base_declarada||0)*(+D.config.aliquota||0)/100;
+const eCaixa=i=>/caixa|conta|corrente/i.test(i.tipo||'');
+const somaCaixa=()=>D.investimentos.filter(eCaixa).reduce((s,i)=>s+ +i.valor,0)+(+D.config.caixa_empresa||0);
+const somaInvestido=()=>D.investimentos.filter(i=>!eCaixa(i)).reduce((s,i)=>s+ +i.valor,0);
+const reservaTotal=()=>somaCaixa()+somaInvestido();
+
+function metaDoMes(a,m){
+  const r=D.metas_mes.find(x=>x.ano_mes===chave(a,m));
+  const total=r?+r.total:(+D.config.meta_mensal||0);
+  // nulo fica nulo: significa "calcular proporcional aos dias do bloco"
+  const s=[r?.s1,r?.s2,r?.s3,r?.s4,r?.s5].map(v=>v==null||v===''?null:+v);
+  return {total,s,registro:r};
+}
+/* Divide o mes em blocos de 7 dias corridos. Mes de 28 dias da 4 blocos,
+   de 29 a 35 dias da 5, sendo o ultimo mais curto. */
+function blocosSemana(a,m){
+  const ult=new Date(a,m+1,0).getDate(), b=[];
+  for(let d=1;d<=ult;d+=7) b.push([d,Math.min(d+6,ult)]);
+  return b;
+}
+function abertas(){
+  return D.parcelas.filter(p=>!p.pago).map(p=>{
+    const c=D.contratos.find(x=>x.id===p.contrato_id);
+    return {...p,contrato:c,cliente:c?D.clientes.find(x=>x.id===c.cliente_id):null,d:dias(p.vencimento)};
+  }).filter(p=>p.contrato&&p.contrato.status!=='cancelado').sort((a,b)=>String(a.vencimento).localeCompare(String(b.vencimento)));
+}
+function previsao(n){
+  const r=[],ab=abertas();
+  for(let i=0;i<n;i++){const d=new Date(ANO,MES+i,1);
+    r.push({mes:`${MESC[d.getMonth()]}/${String(d.getFullYear()).slice(2)}`,
+      valor:ab.filter(p=>noMes(p.vencimento,d.getFullYear(),d.getMonth())).reduce((s,p)=>s+ +p.valor,0)});}
+  return r;
+}
+function semanas(a,m){
+  const ult=new Date(a,m+1,0).getDate();
+  const faixas=blocosSemana(a,m);
+  const M=metaDoMes(a,m); let acum=0;
+  return faixas.map(([i,f],k)=>{
+    const dias=f-i+1;
+    // meta da semana: o que você digitou, ou o proporcional aos dias do bloco
+    const alvo = M.s[k]!=null ? M.s[k] : M.total*dias/ult;
+    const fixa = M.s[k]!=null;
+    let v=0;
+    D.parcelas.filter(p=>p.pago&&noMes(p.data_pagamento||p.vencimento,a,m)).forEach(p=>{
+      const dd=dObj(p.data_pagamento||p.vencimento).getDate();if(dd>=i&&dd<=f)v+=+p.valor;});
+    D.lancamentos.filter(l=>l.tipo==='entrada'&&l.pago&&noMes(l.data,a,m)).forEach(l=>{
+      const dd=dObj(l.data).getDate();if(dd>=i&&dd<=f)v+=+l.valor;});
+    acum+=v;
+    return {n:k+1,ini:i,fim:f,dias,valor:v,alvo,fixa,
+            pct:alvo?v/alvo*100:0,acum,pctAcum:M.total?acum/M.total*100:0};
+  });
+}
+function repasseAno(a){
+  const meses=(D.config.repasse_meses||'1,4,7,10').split(',').map(x=>+x.trim()-1).filter(x=>x>=0&&x<12);
+  const fw=null;
+  return meses.map(m=>{
+    let base=0;
+    for(let k=1;k<=3;k++){const d=new Date(a,m-k,1);
+      const cx=caixaMes(d.getFullYear(),d.getMonth());
+      base+=fw?(cx.pp[fw.id]||0):cx.total;}
+    const pc=(+D.config.socio_percent||0)/100;
+    return {mes:m,base,provisao:base*pc,passou:new Date(a,m+1,0)<HOJE};
+  });
+}
+
+/* ================= AGENTE ================= */
+function agenteLocal(){
+  const A=[];
+  const cx=caixaMes(ANO,MES), dp=despesasMes(ANO,MES);
+  const fat=faturaTotal(ANO,MES), imp=impostoMes(), M=metaDoMes(ANO,MES);
+  const ab=abertas(), atr=ab.filter(p=>p.d<0);
+  const hoje=HOJE.getDate(), ult=new Date(ANO,MES+1,0).getDate();
+  const mesAtual=(ANO===HOJE.getFullYear()&&MES===HOJE.getMonth());
+  const res=cx.total-dp.total;
+  A.push(['bom',`<strong>Resultado de ${MESES[MES]}: ${rs(res)}.</strong> Entrou ${rs(cx.total)} e saiu ${rs(dp.total)}. Margem de ${cx.total?(res/cx.total*100).toFixed(1):'0'}%.`]);
+  if(M.total>0&&mesAtual&&hoje>3){
+    const proj=cx.total/hoje*ult, falta=Math.max(0,M.total-cx.total), restam=Math.max(1,ult-hoje);
+    A.push([proj<M.total*0.95?'atencao':'bom',proj<M.total*0.95
+      ?`<strong>Ritmo abaixo da meta.</strong> No passo atual o mês fecha em ${rsc(proj)}, ${rsc(M.total-proj)} abaixo. Faltam ${rsc(falta)} em ${restam} dias, ou ${rsc(falta/restam)} por dia.`
+      :`<strong>Ritmo acima da meta.</strong> No passo atual o mês fecha em ${rsc(proj)}.`]);
+  }
+  if(atr.length){const v=atr.reduce((s,p)=>s+ +p.valor,0);const pior=atr.reduce((a,b)=>a.d<b.d?a:b);
+    A.push(['critico',`<strong>${atr.length} parcelas vencidas somando ${rs(v)}.</strong> A mais antiga é de ${esc(pior.cliente?.nome||'sem nome')}, há ${-pior.d} dias.`]);}
+  const mrrDe=l=>l.reduce((s,c)=>s+ +c.valor_total/Math.max(1,c.meses),0);
+  const venc=D.contratos.filter(c=>c.status==='ativo'&&dias(c.data_fim)<0);
+  const prox=D.contratos.filter(c=>c.status==='ativo'&&dias(c.data_fim)>=0&&dias(c.data_fim)<=30);
+  if(venc.length) A.push(['critico',`<strong>${venc.length} contratos venceram e seguem como ativos</strong>, ${rsc(mrrDe(venc))} de MRR que pode já ter saído.`]);
+  if(prox.length) A.push(['atencao',`<strong>${prox.length} contratos vencem em 30 dias</strong>, ${rsc(mrrDe(prox))} de MRR em risco.`]);
+  const g=agrupaPorMatriz(dp.pc);
+  if(g.length) A.push(['info',`<strong>Maior bloco de despesa: ${esc(g[0][0])}, ${rs(g[0][1].total)}</strong>, ${(g[0][1].total/dp.total*100).toFixed(0)}% do mês.`]);
+  const ap=aPagar(ANO,MES);
+  if(ap>0) A.push(['atencao',`<strong>${rs(ap)} ainda a pagar.</strong> Com ${rsc(cx.total)} recebido, o caixa do mês ${cx.total>=ap?'cobre':'não cobre'}.`]);
+  const novos=D.parcelamentos.filter(p=>noMes(p.primeira_competencia,ANO,MES));
+  if(novos.length) A.push(['critico',`<strong>${novos.length} parcelamentos novos neste mês</strong>, criando ${rs(novos.reduce((s,p)=>s+ +p.valor_parcela*p.total_parcelas,0))} de compromisso futuro.`]);
+  else if(D.parcelamentos.length) A.push(['bom',`<strong>Zero parcelamento novo em ${MESES[MES]}.</strong> Mantendo assim a fatura cai sozinha.`]);
+  if(imp>0) A.push(['info',`<strong>Provisionar ${rs(imp)} de imposto</strong>, ${D.config.aliquota}% sobre ${rsc(D.config.base_declarada)}.`]);
+  const custo=dp.total||(fat+imp);
+  if(custo>0){const m=reservaTotal()/custo;
+    A.push([m<3?'critico':'bom',`<strong>Reserva de ${m.toFixed(1)} mês(es).</strong> ${rsc(reservaTotal())} contra custo mensal de ${rsc(custo)}. O alvo de 3 meses seria ${rsc(custo*3)}.`]);}
+  const pl=D.recorrencias.find(r=>/labore/i.test(r.descricao||''));
+  if(pl&&!D.lancamentos.some(l=>noMes(l.data,ANO,MES)&&/labore/i.test(l.descricao||'')))
+    A.push(['atencao',`<strong>Pró-labore de ${rs(pl.valor)} ainda não lançado</strong> em ${MESES[MES]}. Gerar os fixos na aba Despesas.`]);
+  if(D.config.tem_socios){
+    const rp=(D.config.repasse_meses||'1,4,7,10').split(',').map(x=>+x.trim()-1);
+    if(rp.includes(MES)){
+      const reg=D.repasses.find(x=>x.ano_mes===chave(ANO,MES));
+      A.push([reg&&reg.pago?'bom':'atencao', reg&&reg.pago
+        ? `<strong>Repasse do trimestre já pago:</strong> ${rs(reg.valor)}.`
+        : `<strong>Mês de repasse de sociedade.</strong> Fechar o trimestre e acertar com ${esc(D.config.socio_nome||'seu sócio')}.`]);
+    }
+  }
+  return A;
+}
+function dadosParaIA(){
+  const cx=caixaMes(ANO,MES), dp=despesasMes(ANO,MES);
+  const hist=[];
+  for(let i=5;i>=0;i--){const d=new Date(ANO,MES-i,1);
+    const c=caixaMes(d.getFullYear(),d.getMonth()), s=despesasMes(d.getFullYear(),d.getMonth());
+    hist.push({mes:`${MESC[d.getMonth()]}/${d.getFullYear()}`,recebido:Math.round(c.total),despesas:Math.round(s.total),resultado:Math.round(c.total-s.total)});}
+  const M=metaDoMes(ANO,MES);
+  return {
+    mes:`${MESES[MES]} ${ANO}`, hoje:HOJE.getDate(),
+    caixa_recebido:Math.round(cx.total),
+    recebido_por_produto:Object.fromEntries(Object.entries(cx.pp).map(([k,v])=>[nomeProd(k),Math.round(v)])),
+    despesas_total:Math.round(dp.total),
+    despesas_por_matriz:Object.fromEntries(agrupaPorMatriz(dp.pc).map(([k,v])=>[k,Math.round(v.total)])),
+    a_pagar:Math.round(aPagar(ANO,MES)), ja_pago:Math.round(pagoMes(ANO,MES)),
+    meta_total:M.total, meta_semanal:M.s,
+    semanas:semanas(ANO,MES).map(s=>({semana:s.n,recebido:Math.round(s.valor),alvo:Math.round(s.alvo),pct:Math.round(s.pct)})),
+    historico_6_meses:hist,
+    contratos:{ativos:D.contratos.filter(c=>c.status==='ativo').length,
+      cancelados:D.contratos.filter(c=>c.status==='cancelado').length,
+      mrr:Math.round(D.contratos.filter(c=>c.status==='ativo').reduce((s,c)=>s+ +c.valor_total/Math.max(1,c.meses),0)),
+      vencidos_ainda_ativos:D.contratos.filter(c=>c.status==='ativo'&&dias(c.data_fim)<0).length,
+      vencem_30_dias:D.contratos.filter(c=>c.status==='ativo'&&dias(c.data_fim)>=0&&dias(c.data_fim)<=30).length},
+    recebiveis:{em_aberto:Math.round(abertas().reduce((s,p)=>s+ +p.valor,0)),
+      vencidos:Math.round(abertas().filter(p=>p.d<0).reduce((s,p)=>s+ +p.valor,0)),
+      vencidos_qtd:abertas().filter(p=>p.d<0).length},
+    previsao_6_meses:previsao(6),
+    cartoes:D.cartoes.map(c=>({nome:c.nome,fatura_mes:Math.round(faturaCartao(c.id,ANO,MES)),
+      fatura_em_3m:Math.round(faturaCartao(c.id,ANO,MES+3)),
+      parcelamentos:D.parcelamentos.filter(p=>p.cartao_id===c.id).length})).filter(c=>c.fatura_mes>0),
+    parcelamentos_novos_no_mes:D.parcelamentos.filter(p=>noMes(p.primeira_competencia,ANO,MES))
+      .map(p=>({descricao:p.descricao,parcela:+p.valor_parcela,total:p.total_parcelas})),
+    reserva:{caixa:Math.round(somaCaixa()),investido:Math.round(somaInvestido()),total:Math.round(reservaTotal())},
+    imposto_provisionado:Math.round(impostoMes()),
+    repasse_sociedade:repasseAno(ANO).map(r=>({mes:MESES[r.mes],provisao:Math.round(r.provisao),passou:r.passou}))
+  };
+}
+async function rodarIA(){
+  const url=D.config.agente_url;
+  if(!url) return toast('Configure a URL do agente em Configurações.',true);
+  IA={estado:'rodando',itens:[],erro:''}; verDash();
+  const dados=dadosParaIA();
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    const r=await fetch(url,{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${session?.access_token||SUPABASE_KEY}`},
+      body:JSON.stringify({modo:'analise',mes:`${MESES[MES]} ${ANO}`,dados,
+        automaticos:agenteLocal().map(([n,t])=>t.replace(/<[^>]+>/g,''))})});
+    const j=await r.json();
+    if(j.erro) throw new Error(j.erro);
+    const itens=j.apontamentos||[];
+    IA={estado:'pronto',itens,erro:''};
+    // guarda no historico
+    const {data,error}=await sb.from('analises').insert({
+      ano_mes:chave(ANO,MES), apontamentos:itens, contexto:dados, modelo:'claude'
+    }).select().single();
+    if(error) toast('Análise pronta, mas não consegui salvar no histórico: '+error.message,true);
+    else D.analises.unshift(data);
+  }catch(e){IA={estado:'erro',itens:[],erro:String(e.message||e)};}
+  verDash();
+}
+
+/* ================= RENDER ================= */
+function desenhar(){
+  ({dash:verDash,contr:verContratos,receb:verRecebiveis,desp:verDespesas,
+    lanc:verLancamentos,cart:verCartoes,inv:verInvestimentos,conf:verConfig})[ABA]();
+}
+const hero=(t,v,s,c,extra)=>`<div class="hero ${c||''}"><div class="faixa"></div><div class="t">${t}</div><div class="v">${v}</div><div class="s">${s||''}</div>${extra||''}</div>`;
+const kpi=(t,v,s,c,onclick)=>`<div class="kpi${onclick?' clic':''}"${onclick?` onclick="${onclick}"`:''}><div class="t">${t}</div><div class="v ${c||''}">${v}</div><div class="s">${s||''}</div></div>`;
+
+function verDash(){
+  const cx=caixaMes(ANO,MES), dp=despesasMes(ANO,MES);
+  const fat=faturaTotal(ANO,MES), ap=aPagar(ANO,MES), pg=pagoMes(ANO,MES);
+  const ab=abertas(), atr=ab.filter(p=>p.d<0), noM=ab.filter(p=>p.d>=0&&p.d<=30);
+  const res=cx.total-dp.total, sm=semanas(ANO,MES), M=metaDoMes(ANO,MES);
+  const pct=M.total?Math.min(100,cx.total/M.total*100):0;
+  const quebra=Object.entries(cx.pp).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1])
+    .map(([k,v])=>`<div><span>${esc(nomeProd(k))}</span><span>${rsc(v)}</span></div>`).join('');
+
+  let h=`<h2><span class="q"></span>${MESES[MES]} ${ANO}</h2>
+  <div class="grade g3">
+    ${hero('Caixa da empresa',rsc(reservaTotal()),`${rsc(somaCaixa())} em conta mais ${rsc(somaInvestido())} investido`,'big')}
+    ${hero('Caixa recebido no mês',rsc(cx.total),`${pct.toFixed(0)}% da meta de ${rsc(M.total)}`,'',quebra?`<div class="quebra">${quebra}</div>`:'')}
+    ${hero('Resultado do mês',rsc(res),`recebido menos despesas de ${rsc(dp.total)}`,res>=0?'':'r')}
+  </div>
+  <div class="grade g4" style="margin-top:12px">
+    ${kpi('A receber em 30 dias',rsc(noM.reduce((s,p)=>s+ +p.valor,0)),`${noM.length} parcelas a vencer`,'',"irPara('receb')")}
+    ${kpi('Vencido',rsc(atr.reduce((s,p)=>s+ +p.valor,0)),`${atr.length} parcelas atrasadas`,atr.length?'neg':'',"irPara('receb')")}
+    ${kpi('Pago no mês',rsc(pg),'despesas quitadas','',"irPara('desp')")}
+    ${kpi('Ainda a pagar',rsc(ap),'despesas em aberto',ap?'av':'',"irPara('desp')")}
+  </div>
+
+  <h2><span class="q"></span>Meta · clique nos valores para ajustar</h2>
+  <div class="cartao">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+      <span class="num" style="font-size:27px">${rsc(cx.total)}</span>
+      <span class="rotulo">meta <input class="ed n" style="width:120px;display:inline-block" type="number" step="100" value="${M.total}" onchange="salvarMeta('total',this.value)"> · ${pct.toFixed(0)}%</span>
+    </div>
+    <div class="barra"><i style="width:${pct}%"></i></div>
+    <div class="sem" style="margin-top:15px">${sm.map((s,k)=>`<div class="c">
+      <div class="lb">Semana ${s.n} · dia ${s.ini} a ${s.fim}${s.dias<7?` · ${s.dias} dias`:''}</div>
+      <div class="vv">${rsc(s.valor)}</div>
+      <div class="barra ${s.pct>=100?'':s.pct>=60?'a':'r'}" style="height:6px;margin-top:6px"><i style="width:${Math.min(100,s.pct)}%"></i></div>
+      <div class="pp">meta <input type="number" step="100" value="${Math.round(s.alvo)}" title="${s.fixa?'meta fixada por você. Apague para voltar ao proporcional':'proporcional aos dias do bloco'}" onchange="salvarMeta('s${k+1}',this.value)">${s.fixa?'':' <span style="opacity:.55">auto</span>'}</div>
+      <div class="pp">${s.pct.toFixed(0)}% da semana · ${s.pctAcum.toFixed(0)}% acumulado</div></div>`).join('')}</div>
+    <p class="nota">O mês é dividido em blocos de 7 dias corridos, então mês de 29 dias ou mais tem 5 semanas, a última mais curta. A meta marcada como "auto" acompanha os dias do bloco. Digitou um valor, ele fica fixo. Apagou, volta ao automático.</p>
+  </div>
+
+  <h2><span class="q"></span>Despesas por categoria</h2>
+  <div class="cartao"><div class="combo">
+    <div class="grafico"><canvas id="gDesp" role="img" aria-label="Despesas do mês por categoria matriz"></canvas></div>
+    <div class="leg" id="legDesp"></div>
+  </div></div>
+
+  <h2><span class="q"></span>Previsão de recebimento</h2>
+  <div class="cartao"><div class="combo">
+    <div class="grafico"><canvas id="gPrev" role="img" aria-label="Previsão de recebimento dos próximos seis meses"></canvas></div>
+    <div class="leg" id="legPrev"></div>
+  </div></div>
+
+  <h2><span class="q"></span>Reserva</h2>
+  <div class="cartao"><div class="leg">
+    ${[...D.investimentos].sort((a,b)=>+b.valor-+a.valor).map((i,k)=>`<div class="it">
+      <span class="pt" style="background:${CORES[k%CORES.length]}"></span>
+      <span class="nm">${esc(i.banco)} <span class="rotulo" style="font-size:10px">${esc(i.tipo||'')}</span></span>
+      <span class="vl">${rs(i.valor)}</span><span class="pc">${reservaTotal()?(+i.valor/reservaTotal()*100).toFixed(0):0}%</span></div>`).join('')
+      ||'<div class="vazio">Nenhuma carteira cadastrada.</div>'}
+    <div class="tot"><span class="rotulo">Reserva total</span><span>${rs(reservaTotal())}</span></div></div>
+    <div style="margin-top:12px"><button class="btnv" onclick="irPara('inv')">Editar carteiras</button></div></div>
+
+  <h2><span class="q"></span>Faturas de cartão</h2>
+  <div class="cartao"><div class="leg">
+    ${D.cartoes.map(c=>{const f=faturaCartao(c.id,ANO,MES);return f>0?`<div class="it">
+      <span class="pt" style="background:${c.escopo==='empresa'?'#4E9AE8':'#7e8183'}"></span>
+      <span class="nm">${esc(c.nome)} <span class="rotulo" style="font-size:10px">venc dia ${c.dia_vencimento}</span></span>
+      <span class="vl">${rs(f)}</span><span class="pc">${fat?(f/fat*100).toFixed(0):0}%</span></div>`:''}).join('')
+      ||'<div class="vazio">Sem fatura projetada.</div>'}
+    <div class="tot"><span class="rotulo">Total</span><span>${rs(fat)}</span></div></div>
+    <div style="margin-top:12px"><button class="btnv" onclick="irPara('cart')">Ver por cartão</button></div></div>
+
+  ${D.config.tem_socios?`
+  <h2><span class="q"></span>Repasse de sociedade · ${ANO}</h2>
+  <div class="cartao rolagem"><table><thead><tr>
+    <th>Mês</th><th class="d">Sugestão do painel</th><th class="d">Valor do repasse</th><th>Observação</th><th>Pago</th>
+  </tr></thead><tbody>${repasseAno(ANO).map(r=>{
+    const k=chave(ANO,r.mes), reg=D.repasses.find(x=>x.ano_mes===k)||{};
+    return `<tr>
+    <td>${MESES[r.mes]} ${r.passou?'<span class="tag" style="margin-left:6px">passou</span>':MES===r.mes?'<span class="tag al" style="margin-left:6px">este mês</span>':''}</td>
+    <td class="d" style="color:var(--fraco)">${rsc(r.provisao)}</td>
+    <td class="d"><input class="ed n" style="width:118px" type="number" step="0.01" value="${reg.valor??''}" placeholder="${Math.round(r.provisao)}" onchange="salvarRepasse('${k}','valor',this.value)"></td>
+    <td><input class="ed" value="${esc(reg.observacao||'')}" placeholder="anotação" onchange="salvarRepasse('${k}','observacao',this.value)"></td>
+    <td><button class="tag ${reg.pago?'ok':'al'}" onclick="salvarRepasse('${k}','pago',${!reg.pago})">${reg.pago?'pago':'em aberto'}</button></td>
+  </tr>`}).join('')}</tbody></table>
+  <p class="nota">A coluna cinza é uma sugestão calculada sobre o recebido dos três meses anteriores. O valor que vale é o que você digitar.</p></div>`:''}
+
+  <h2><span class="q"></span>Agente financeiro</h2>
+  <div style="margin-bottom:12px"><button class="btn" id="btIA" onclick="rodarIA()" ${IA.estado==='rodando'?'disabled':''}>
+    ${IA.estado==='rodando'?'<span class="girando"></span>Analisando':
+      (IA.estado==='pronto'||D.analises.some(a=>a.ano_mes===chave(ANO,MES)))?'Rodar nova análise':'Rodar análise com IA'}</button></div>
+  <div id="ag"></div>`;
+
+  document.getElementById('v-dash').innerHTML=h;
+  graficoDespesas(dp); graficoPrevisao();
+  renderAgente();
+}
+const quando=s=>{const d=new Date(s);
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} às ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;};
+const blocoApontamentos=l=>(l||[]).map(i=>`<div class="alerta ${esc(i.nivel||'info')}"><div>
+  <strong>${esc(i.titulo||'')}</strong><br>${esc(i.texto||'')}
+  ${i.acao?`<span class="acao"><b>Ação:</b> ${esc(i.acao)}</span>`:''}</div></div>`).join('');
+
+function renderAgente(){
+  const el=document.getElementById('ag'); if(!el) return;
+  const hist=D.analises.filter(a=>a.ano_mes===chave(ANO,MES))
+    .sort((a,b)=>String(b.criado_em).localeCompare(String(a.criado_em)));
+  let h='';
+
+  if(IA.estado==='erro')
+    h+=`<div class="alerta critico"><div><strong>A análise com IA não rodou.</strong><br>${esc(IA.erro)}<span class="acao">Os apontamentos automáticos abaixo continuam valendo.</span></div></div>`;
+
+  // a mais recente aparece aberta: a que acabou de rodar, ou a ultima salva
+  const atual = (IA.estado==='pronto'&&IA.itens.length) ? {itens:IA.itens,quandoTxt:'agora'} :
+                hist.length ? {itens:hist[0].apontamentos,quandoTxt:quando(hist[0].criado_em),id:hist[0].id} : null;
+  if(atual){
+    h+=`<div class="rotulo" style="margin-bottom:9px">Análise de ${atual.quandoTxt}${atual.id?` · <button class="x" style="font-size:12px" onclick="apagarAnalise('${atual.id}')" title="Apagar esta análise">✕</button>`:''}</div>`;
+    h+=blocoApontamentos(atual.itens);
+    h+='<p class="nota">Gerada por IA a partir dos números do painel. Confira antes de decidir. Não substitui contador.</p>';
+  }
+
+  const anteriores = (IA.estado==='pronto'&&IA.itens.length) ? hist.slice(1) : hist.slice(1);
+  if(anteriores.length){
+    h+=`<h2 style="margin-top:26px"><span class="q"></span>Histórico · ${anteriores.length} análise${anteriores.length>1?'s':''} anterior${anteriores.length>1?'es':''}</h2>`;
+    anteriores.forEach(a=>{
+      const aberto=HIST_ABERTO===a.id;
+      const crit=(a.apontamentos||[]).filter(x=>x.nivel==='critico').length;
+      h+=`<div class="cartao" style="margin-bottom:8px;padding:0">
+        <button class="cabecalho" onclick="abrirHistorico('${a.id}')" aria-expanded="${aberto}">
+          <span class="seta ${aberto?'on':''}">▸</span>
+          <span style="flex:1;text-align:left"><strong>${quando(a.criado_em)}</strong>
+            <span class="rotulo" style="font-size:10px;display:block;margin-top:2px">${(a.apontamentos||[]).length} apontamentos${crit?` · ${crit} crítico${crit>1?'s':''}`:''}</span></span>
+          <span class="x" onclick="event.stopPropagation();apagarAnalise('${a.id}')" title="Apagar">✕</span>
+        </button>
+        <div class="corpo ${aberto?'':'oculto'}">${aberto?`<div style="padding-top:14px">${blocoApontamentos(a.apontamentos)}</div>`:''}</div>
+      </div>`;
+    });
+  }
+
+  h+=`<h2 style="margin-top:${atual||anteriores.length?'26px':'0'}"><span class="q"></span>Apontamentos automáticos</h2>`;
+  h+=agenteLocal().map(([n,t])=>`<div class="alerta ${n}"><div>${t}</div></div>`).join('');
+  el.innerHTML=h;
+}
+function abrirHistorico(id){HIST_ABERTO=(HIST_ABERTO===id?null:id);renderAgente();}
+async function apagarAnalise(id){
+  if(!confirm('Apagar esta análise do histórico?'))return;
+  const {error}=await sb.from('analises').delete().eq('id',id);
+  if(error)return toast('Erro: '+error.message,true);
+  D.analises=D.analises.filter(a=>a.id!==id);
+  if(IA.estado==='pronto')IA={estado:'ocioso',itens:[],erro:''};
+  toast('Análise removida.');verDash();
+}
+async function salvarRepasse(ano_mes,campo,valor){
+  const reg=D.repasses.find(x=>x.ano_mes===ano_mes)||{ano_mes,percentual:25,pago:false};
+  const linha={ano_mes,base:reg.base||0,percentual:reg.percentual||25,
+    valor:reg.valor||0,pago:reg.pago||false,observacao:reg.observacao||null};
+  linha[campo]= campo==='valor' ? (+valor||0) : valor;
+  const {error}=await sb.from('repasses').upsert(linha,{onConflict:'ano_mes'});
+  if(error) return toast('Erro ao salvar repasse: '+error.message,true);
+  const i=D.repasses.findIndex(x=>x.ano_mes===ano_mes);
+  if(i>=0) D.repasses[i]=linha; else D.repasses.push(linha);
+  toast('Repasse salvo.'); desenhar();
+}
+async function salvarMeta(campo,valor){
+  const k=chave(ANO,MES), M=metaDoMes(ANO,MES);
+  const linha={ano_mes:k,total:M.total,s1:M.s[0],s2:M.s[1],s3:M.s[2],s4:M.s[3],s5:M.s[4]};
+  // campo vazio volta ao calculo proporcional
+  linha[campo]= (valor===''||valor==null) ? null : (+valor||0);
+  if(campo==='total'&&linha.total==null) linha.total=0;
+  const {error}=await sb.from('metas_mes').upsert(linha,{onConflict:'ano_mes'});
+  if(error) return toast('Erro ao salvar meta: '+error.message,true);
+  const i=D.metas_mes.findIndex(x=>x.ano_mes===k);
+  if(i>=0) D.metas_mes[i]=linha; else D.metas_mes.push(linha);
+  toast('Meta salva.'); desenhar();
+}
+function graficoDespesas(dp){
+  const g=agrupaPorMatriz(dp.pc), leg=document.getElementById('legDesp');
+  if(!g.length){leg.innerHTML='<div class="vazio">Nenhuma despesa lançada neste mês.</div>';return;}
+  leg.innerHTML=g.map(([m,o],k)=>{
+    const filhos=Object.entries(o.filhos).filter(([n])=>n!==m).sort((a,b)=>b[1]-a[1]);
+    return `<div class="it"><span class="pt" style="background:${CORES[k%CORES.length]}"></span>
+      <span class="nm"><strong>${esc(m)}</strong></span><span class="vl">${rs(o.total)}</span>
+      <span class="pc">${(o.total/dp.total*100).toFixed(0)}%</span></div>`
+      +filhos.map(([n,v])=>{const e=catPorNome(n)?.escopo;
+        return `<div class="it sub"><span class="pt" style="background:transparent"></span>
+        <span class="nm">${esc(n)}${e&&e!=='ambos'?` <span class="rotulo" style="font-size:9px">${e}</span>`:''}</span>
+        <span class="vl">${rs(v)}</span><span class="pc"></span></div>`}).join('');
+  }).join('')+`<div class="tot"><span class="rotulo">Total</span><span>${rs(dp.total)}</span></div>`;
+  pinta('gDesp','doughnut',{labels:g.map(x=>x[0]),
+    datasets:[{data:g.map(x=>x[1].total),backgroundColor:g.map((_,k)=>CORES[k%CORES.length]),borderColor:'#0e0e0e',borderWidth:2}]});
+}
+function graficoPrevisao(){
+  const p=previsao(6), tot=p.reduce((s,x)=>s+x.valor,0);
+  document.getElementById('legPrev').innerHTML=p.map((x,k)=>`<div class="it">
+    <span class="pt" style="background:${k===0?'#44CF17':'#4E9AE8'}"></span><span class="nm">${x.mes}</span>
+    <span class="vl">${rs(x.valor)}</span><span class="pc">${tot?(x.valor/tot*100).toFixed(0):0}%</span></div>`).join('')
+    +`<div class="tot"><span class="rotulo">6 meses</span><span>${rs(tot)}</span></div>`;
+  pinta('gPrev','bar',{labels:p.map(x=>x.mes),
+    datasets:[{label:'A receber',data:p.map(x=>x.valor),backgroundColor:p.map((_,k)=>k===0?'#44CF17':'#4E9AE8'),borderRadius:3,maxBarThickness:36}]});
+}
+function pinta(id,tipo,data,extra){
+  const el=document.getElementById(id);if(!el)return;
+  if(G[id])G[id].destroy();
+  G[id]=new Chart(el,{type:tipo,data,options:Object.assign({responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+rsc(c.parsed.y??c.parsed)}}},
+    scales:tipo==='doughnut'?{}:{x:{grid:{display:false},ticks:{color:'#7e8183',font:{family:'monospace',size:11}}},
+      y:{beginAtZero:true,grid:{color:'#1f1f1f'},ticks:{color:'#7e8183',font:{family:'monospace',size:11},callback:v=>'R$ '+Math.round(v/1000)+'k'}}}},extra||{})});
+}
+
+/* ================= CONTRATOS ================= */
+const recebidoDe=id=>D.parcelas.filter(p=>p.contrato_id===id&&p.pago).reduce((s,p)=>s+ +p.valor,0);
+const saldoDe=c=>Math.max(0,+c.valor_total-recebidoDe(c.id));
+const parcelaDe=c=>{const n=+c.parcelas_saldo||0;return n?saldoDe(c)/n:0};
+
+function verContratos(){
+  const lst=D.contratos.map(c=>({...c,m:D.clientes.find(x=>x.id===c.cliente_id),d:dias(c.data_fim)}))
+    .filter(c=>c.m).sort((a,b)=>a.d-b.d);
+  const at=lst.filter(c=>c.status==='ativo');
+  const mrrDe=l=>l.reduce((s,c)=>s+ +c.valor_total/Math.max(1,c.meses),0);
+  const venc=at.filter(c=>c.d<0), d30=at.filter(c=>c.d>=0&&c.d<=30);
+  const recebidoTotal=D.parcelas.filter(p=>p.pago).reduce((s,p)=>s+ +p.valor,0);
+  const aReceber=D.parcelas.filter(p=>!p.pago).reduce((s,p)=>s+ +p.valor,0);
+
+  let h=`<h2><span class="q"></span>Contratos</h2>
+  <div class="grade g4">
+    ${kpi('Já recebido',rsc(recebidoTotal),'tudo que foi baixado')}
+    ${kpi('A receber',rsc(aReceber),'parcelas em aberto')}
+    ${kpi('MRR ativo',rsc(mrrDe(at)),`${at.length} contratos ativos`)}
+    ${kpi('Vencem em 30d',`${d30.length}`,venc.length?`${venc.length} já venceram`:'nenhum vencido',venc.length?'neg':'av')}
+  </div>
+
+  <h2><span class="q"></span>Novo contrato</h2>
+  <div class="cartao"><div class="formlinha">
+    <div class="campo"><label>Nome</label><input id="cnNome"></div>
+    <div class="campo"><label>Produto</label><select id="cnProd">${D.produtos.filter(p=>p.ativo!==false).map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('')}</select></div>
+    <div class="campo"><label>Valor cheio</label><input id="cnValor" type="number" step="0.01"></div>
+    <div class="campo"><label>Entrada</label><input id="cnEntrada" type="number" step="0.01" value="0"></div>
+    <div class="campo"><label>Plano</label><select id="cnPlano" onchange="aplicarPlano()">
+      <option value="">— livre —</option>
+      ${D.planos.filter(p=>p.ativo!==false).map(p=>`<option value="${p.id}">${esc(p.nome)} · ${p.meses}m</option>`).join('')}
+    </select></div>
+    <div class="campo"><label>Duração (meses)</label><input id="cnMeses" type="number" value="6"></div>
+    <div class="campo"><label>Parcelas do saldo</label><input id="cnParc" type="number" value="5"></div>
+    <div class="campo"><label>Início</label><input id="cnIni" type="date" value="${iso(HOJE)}"></div>
+    <div class="campo"><label>Calls</label><input id="cnCalls" type="number" value="0"></div>
+    <button class="btn" onclick="novoContrato()">Adicionar</button>
+  </div></div>
+
+  <h2><span class="q"></span>Todos · ${lst.length} contratos · tudo editável</h2>
+  <div class="cartao"><table class="contratos"><thead><tr>
+    <th>Cliente</th><th class="d">Valor cheio</th><th class="d">Recebido</th><th class="d">Saldo</th>
+    <th class="d">Parc.</th><th>Vence</th><th>Situação</th><th class="acoes"></th>
+  </tr></thead><tbody>`;
+  lst.forEach(c=>{
+    const rec=recebidoDe(c.id), sal=saldoDe(c);
+    const tg=c.status==='cancelado'?'<span class="tag mal">saiu</span>':
+             c.status==='renovado'?'<span class="tag ok">renovado</span>':
+             c.status==='concluido'?'<span class="tag">concluído</span>':
+             c.d<0?`<span class="tag mal">venceu há ${-c.d}d</span>`:
+             c.d<=30?`<span class="tag al">${c.d}d</span>`:`<span class="tag">${c.d}d</span>`;
+    h+=`<tr>
+      <td class="nome">
+        <input class="ed nm" value="${esc(c.m.nome)}" onchange="up('clientes','${c.m.id}','nome',this.value)">
+        <div class="sub">
+          <select class="ed mudo" onchange="up('contratos','${c.id}','produto_id',this.value)">${D.produtos.map(p=>`<option value="${p.id}"${p.id===c.produto_id?' selected':''}>${esc(p.nome)}</option>`).join('')}</select>
+          <span>calls</span>
+          <input class="ed n mudo" style="width:34px" type="number" value="${c.m.calls_feitas}" onchange="upNum('clientes','${c.m.id}','calls_feitas',this.value)">/<input class="ed n mudo" style="width:34px" type="number" value="${c.m.calls_contratadas}" onchange="upNum('clientes','${c.m.id}','calls_contratadas',this.value)">
+        </div>
+      </td>
+      <td class="d"><input class="ed n lim" type="number" step="0.01" value="${c.valor_total}" onchange="upNum('contratos','${c.id}','valor_total',this.value)"></td>
+      <td class="d" style="color:var(--medio)">${rsc(rec)}</td>
+      <td class="d ${sal>0?'av':''}">${rsc(sal)}</td>
+      <td class="d"><input class="ed n mini" type="number" value="${c.parcelas_saldo||0}" onchange="upNum('contratos','${c.id}','parcelas_saldo',this.value)"></td>
+      <td><input class="ed dt" type="date" value="${String(c.data_fim).slice(0,10)}" onchange="up('contratos','${c.id}','data_fim',this.value)"></td>
+      <td><select class="ed" onchange="mudaStatus('${c.id}',this.value)">${['ativo','renovado','concluido','cancelado'].map(s=>`<option value="${s}"${s===c.status?' selected':''}>${s}</option>`).join('')}</select>
+        <div class="sub">${tg}</div></td>
+      <td class="acoes">
+        <button class="btnv" style="padding:3px 8px;font-size:11px" title="Gerar as parcelas do saldo" onclick="regerar('${c.id}')">Parcelas</button>
+        <button class="x" onclick="del('clientes','${c.m.id}')" aria-label="Remover">✕</button>
+      </td>
+    </tr>`;});
+  h+=`</tbody></table>
+  <p class="nota">Saldo é o valor cheio menos o recebido. O botão Parcelas apaga as parcelas em aberto e gera de novo, dividindo o saldo pelo número da coluna Parc. Nada que já foi pago é alterado.</p></div>`;
+  document.getElementById('v-contr').innerHTML=h;
+}
+
+/* Regera as parcelas em aberto a partir do valor cheio e do numero de parcelas.
+   O que ja foi pago fica intacto. */
+async function regerar(id){
+  const c=D.contratos.find(x=>x.id===id); if(!c) return;
+  const rec=recebidoDe(id), saldo=+c.valor_total-rec, n=+c.parcelas_saldo||0;
+  if(saldo<0) return toast(`O valor cheio está menor que os ${rs(rec)} já recebidos.`,true);
+  if(saldo>0&&!n) return toast('Informe em quantas parcelas fica o saldo na coluna Parc.',true);
+  const m=D.clientes.find(x=>x.id===c.cliente_id);
+  if(!confirm(`${m?m.nome:'Contrato'}\n\nSaldo de ${rs(saldo)} em ${n} parcelas de ${rs(n?saldo/n:0)}, a partir do próximo mês.\n\nAs parcelas em aberto de hoje serão substituídas. Confirma?`)) return;
+
+  const abertasId=D.parcelas.filter(p=>p.contrato_id===id&&!p.pago).map(p=>p.id);
+  if(abertasId.length){
+    const {error}=await sb.from('parcelas').delete().in('id',abertasId);
+    if(error) return toast('Erro ao limpar: '+error.message,true);
+    D.parcelas=D.parcelas.filter(p=>!abertasId.includes(p.id));
+  }
+  if(saldo>0&&n>0){
+    const di=new Date(HOJE.getFullYear(),HOJE.getMonth()+1,10);
+    const pagas=D.parcelas.filter(p=>p.contrato_id===id).length;
+    const base=Math.floor(saldo/n*100)/100, novas=[];
+    for(let i=0;i<n;i++){
+      const v=new Date(di.getFullYear(),di.getMonth()+i,10);
+      novas.push({contrato_id:id,numero:pagas+i+1,
+        valor:i===n-1?+(saldo-base*(n-1)).toFixed(2):base,vencimento:iso(v),pago:false});
+    }
+    const {data,error}=await sb.from('parcelas').insert(novas).select();
+    if(error) return toast('Erro ao gerar: '+error.message,true);
+    D.parcelas.push(...(data||[]));
+    const fim=new Date(di.getFullYear(),di.getMonth()+n-1,10);
+    await sb.from('contratos').update({entrada:rec,meses:n+1,revisado:true,data_fim:iso(fim)}).eq('id',id);
+    Object.assign(c,{entrada:rec,meses:n+1,revisado:true,data_fim:iso(fim)});
+    toast(`${n} parcelas de ${rs(saldo/n)} geradas.`);
+  } else {
+    toast('Contrato quitado, sem parcelas em aberto.');
+  }
+  desenhar();
+}
+
+/* Escolher um plano preenche duracao e parcelas. Continua tudo editavel depois. */
+function aplicarPlano(){
+  const id=document.getElementById('cnPlano').value;
+  const p=D.planos.find(x=>x.id===id); if(!p) return;
+  document.getElementById('cnMeses').value=p.meses;
+  document.getElementById('cnParc').value=(p.parcelas_padrao??Math.max(p.meses-1,0));
+}
+async function novoContrato(){
+  const nome=document.getElementById('cnNome').value.trim();
+  const produto_id=document.getElementById('cnProd').value;
+  const valor=+document.getElementById('cnValor').value||0;
+  const entrada=+document.getElementById('cnEntrada').value||0;
+  const meses=Math.max(1,+document.getElementById('cnMeses').value||1);
+  const nParc=Math.max(0,+document.getElementById('cnParc').value||0);
+  const ini=document.getElementById('cnIni').value;
+  if(!nome)return toast('Informe o nome.',true);
+  if(!valor)return toast('Informe o valor cheio.',true);
+  if(entrada>valor)return toast('A entrada não pode ser maior que o valor cheio.',true);
+  const {data:m,error:e1}=await sb.from('clientes').insert({nome,produto_id,
+    calls_contratadas:+document.getElementById('cnCalls').value||0}).select().single();
+  if(e1)return toast('Erro: '+e1.message,true);
+  const di=dObj(ini), df=new Date(di.getFullYear(),di.getMonth()+meses,di.getDate());
+  const {data:c,error:e2}=await sb.from('contratos').insert({cliente_id:m.id,produto_id,
+    plano_id:document.getElementById('cnPlano').value||null,
+    valor_total:valor,entrada,meses,parcelas_saldo:nParc,revisado:true,
+    data_inicio:ini,data_fim:iso(df)}).select().single();
+  if(e2)return toast('Erro no contrato: '+e2.message,true);
+  const ps=[]; let nn=0;
+  if(entrada>0) ps.push({contrato_id:c.id,numero:++nn,valor:entrada,vencimento:ini,pago:true,data_pagamento:ini});
+  const saldo=valor-entrada;
+  if(saldo>0&&nParc>0){
+    const base=Math.floor(saldo/nParc*100)/100;
+    for(let i=0;i<nParc;i++){const v=new Date(di.getFullYear(),di.getMonth()+i+1,di.getDate());
+      ps.push({contrato_id:c.id,numero:++nn,
+        valor:i===nParc-1?+(saldo-base*(nParc-1)).toFixed(2):base,
+        vencimento:iso(v),pago:false});}
+  }
+  const {data:pp}=await sb.from('parcelas').insert(ps).select();
+  D.clientes.push(m);D.contratos.push(c);D.parcelas.push(...(pp||[]));
+  ['cnNome','cnValor'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('cnEntrada').value='0';
+  toast(`${nome} adicionado. Entrada ${rs(entrada)} e ${nParc} parcelas de ${rs(nParc?(valor-entrada)/nParc:0)}.`);
+  desenhar();
+}
+async function mudaStatus(id,st){
+  const {error}=await sb.from('contratos').update({status:st}).eq('id',id);
+  if(error)return toast('Erro: '+error.message,true);
+  const c=D.contratos.find(x=>x.id===id);if(c)c.status=st;
+  if(st==='cancelado'&&c){const m=D.clientes.find(x=>x.id===c.cliente_id);
+    if(m){await sb.from('clientes').update({status:'cancelado'}).eq('id',m.id);m.status='cancelado';}}
+  toast('Salvo.');desenhar();
+}
+
+/* ================= RECEBÍVEIS ================= */
+function verRecebiveis(){
+  const ab=abertas();
+  const f=(a,b)=>ab.filter(p=>-p.d>=a&&(b===null||-p.d<=b));
+  const atr=ab.filter(p=>p.d<0), f1=f(1,30), f2=f(31,60), f3=f(61,null);
+  const sm=a=>a.reduce((s,p)=>s+ +p.valor,0);
+
+  // recebido no mes selecionado: parcelas baixadas + entradas avulsas
+  const recParc=D.parcelas.filter(p=>p.pago&&noMes(p.data_pagamento||p.vencimento,ANO,MES)).map(p=>{
+    const c=D.contratos.find(x=>x.id===p.contrato_id);
+    return {...p,tipo:'parcela',contrato:c,cliente:c?D.clientes.find(x=>x.id===c.cliente_id):null};
+  });
+  const recLanc=D.lancamentos.filter(l=>l.tipo==='entrada'&&l.pago&&noMes(l.data,ANO,MES))
+    .map(l=>({...l,tipo:'lancamento'}));
+  const totalRec=recParc.reduce((s,p)=>s+ +p.valor,0)+recLanc.reduce((s,l)=>s+ +l.valor,0);
+
+  // futuras agrupadas por mes
+  const futuras={};
+  ab.filter(p=>p.d>=0).forEach(p=>{
+    const k=String(p.vencimento).slice(0,7);
+    (futuras[k]=futuras[k]||[]).push(p);
+  });
+  const meses=Object.keys(futuras).sort();
+
+  let h=`<h2><span class="q"></span>Recebíveis</h2>
+  <div class="grade g4">
+    ${kpi('Vencido',rsc(sm(atr)),`${atr.length} parcelas`,atr.length?'neg':'')}
+    ${kpi('1 a 30 dias',rsc(sm(f1)),`${f1.length} parcelas`,f1.length?'av':'')}
+    ${kpi('31 a 60 dias',rsc(sm(f2)),`${f2.length} parcelas`,f2.length?'av':'')}
+    ${kpi('Mais de 60 dias',rsc(sm(f3)),`${f3.length} parcelas`,f3.length?'neg':'')}
+  </div>
+
+  <h2><span class="q"></span>Vencido · ${atr.length} parcelas · ${rs(sm(atr))}</h2>`;
+  h+= atr.length ? tabelaParcelas(atr,true) : '<div class="vazio">Nada vencido. Cobrança em dia.</div>';
+
+  h+=`<h2><span class="q"></span>Recebido em ${MESES[MES]} · ${rs(totalRec)}</h2>`;
+  if(!recParc.length&&!recLanc.length) h+='<div class="vazio">Nada baixado neste mês.</div>';
+  else{
+    h+=`<div class="cartao"><table class="recebido"><thead><tr>
+      <th>Origem</th><th>Data do pagamento</th><th class="d">Valor</th><th class="acoes"></th>
+    </tr></thead><tbody>`;
+    recParc.sort((a,b)=>+b.valor-+a.valor).forEach(p=>{h+=`<tr>
+      <td class="nome"><input class="ed nm" value="${esc(p.cliente?.nome||'')}" onchange="up('clientes','${p.cliente?.id}','nome',this.value)">
+        <div class="sub">${esc(nomeProd(p.contrato?.produto_id))} · parcela ${p.numero}</div></td>
+      <td><input class="ed dt" type="date" value="${String(p.data_pagamento||p.vencimento).slice(0,10)}" onchange="up('parcelas','${p.id}','data_pagamento',this.value)"></td>
+      <td class="d"><input class="ed n lim" type="number" step="0.01" value="${p.valor}" onchange="upNum('parcelas','${p.id}','valor',this.value)"></td>
+      <td class="acoes"><button class="btnv" style="padding:3px 9px;font-size:11px" onclick="desfazer('${p.id}')">Desfazer</button></td>
+    </tr>`;});
+    recLanc.sort((a,b)=>+b.valor-+a.valor).forEach(l=>{h+=`<tr>
+      <td class="nome"><input class="ed nm" value="${esc(l.descricao||'')}" onchange="up('lancamentos','${l.id}','descricao',this.value)">
+        <div class="sub">${esc(nomeProd(l.produto_id))} · lançamento avulso</div></td>
+      <td><input class="ed dt" type="date" value="${String(l.data).slice(0,10)}" onchange="up('lancamentos','${l.id}','data',this.value)"></td>
+      <td class="d"><input class="ed n lim" type="number" step="0.01" value="${l.valor}" onchange="upNum('lancamentos','${l.id}','valor',this.value)"></td>
+      <td class="acoes"><button class="x" onclick="del('lancamentos','${l.id}')" aria-label="Remover">✕</button></td>
+    </tr>`;});
+    h+=`</tbody></table>
+    <p class="nota">Desfazer devolve a parcela para em aberto, sem apagar nada. Valor e data são editáveis direto aqui.</p></div>`;
+  }
+
+  h+=`<h2><span class="q"></span>A vencer · ${meses.length} meses</h2>`;
+  if(!meses.length) h+='<div class="vazio">Nenhuma parcela futura cadastrada.</div>';
+  else meses.forEach(k=>{
+    const [a,m]=k.split('-').map(Number);
+    const lista=futuras[k].sort((x,y)=>String(x.vencimento).localeCompare(String(y.vencimento)));
+    const total=lista.reduce((s,p)=>s+ +p.valor,0);
+    const aberto=REC_ABERTO===k;
+    h+=`<div class="cartao" style="margin-bottom:8px;padding:0">
+      <button class="cabecalho" onclick="abrirMes('${k}')" aria-expanded="${aberto}">
+        <span class="seta ${aberto?'on':''}">▸</span>
+        <span style="flex:1;text-align:left"><strong>${MESES[m-1]} ${a}</strong>
+          <span class="rotulo" style="font-size:10px;display:block;margin-top:2px">${lista.length} parcela${lista.length>1?'s':''}</span></span>
+        <span class="num" style="font-size:18px;white-space:nowrap">${rs(total)}</span>
+      </button>
+      <div class="corpo ${aberto?'':'oculto'}">${aberto?tabelaParcelas(lista,false,true):''}</div>
+    </div>`;
+  });
+  document.getElementById('v-receb').innerHTML=h;
+}
+
+function tabelaParcelas(lista,vencido,dentro){
+  let h=`${dentro?'':'<div class="cartao">'}<table class="receb"><thead><tr>
+    <th>Cliente</th><th class="d">Parc.</th><th>Vencimento</th>${vencido?'<th>Atraso</th>':''}<th class="d">Valor</th><th class="acoes"></th>
+  </tr></thead><tbody>`;
+  lista.forEach(p=>{
+    const at=-p.d;
+    h+=`<tr>
+      <td class="nome"><input class="ed nm" value="${esc(p.cliente?.nome||'')}" onchange="up('clientes','${p.cliente?.id}','nome',this.value)">
+        <div class="sub">${esc(nomeProd(p.contrato?.produto_id))}</div></td>
+      <td class="d"><input class="ed n mini" type="number" value="${p.numero}" onchange="upNum('parcelas','${p.id}','numero',this.value)"></td>
+      <td><input class="ed dt" type="date" value="${String(p.vencimento).slice(0,10)}" onchange="up('parcelas','${p.id}','vencimento',this.value)"></td>
+      ${vencido?`<td>${at>60?'<span class="tag mal">60+ dias</span>':at>30?'<span class="tag mal">31-60 dias</span>':`<span class="tag al">${at} dias</span>`}</td>`:''}
+      <td class="d"><input class="ed n lim" type="number" step="0.01" value="${p.valor}" onchange="upNum('parcelas','${p.id}','valor',this.value)"></td>
+      <td class="acoes"><button class="btnv" style="padding:3px 9px;font-size:11px" onclick="baixar('${p.id}')">Baixar</button>
+      <button class="x" onclick="del('parcelas','${p.id}')" aria-label="Remover">✕</button></td>
+    </tr>`;});
+  return h+`</tbody></table>${dentro?'':'</div>'}`;
+}
+function abrirMes(k){REC_ABERTO=(REC_ABERTO===k?null:k);verRecebiveis();}
+function abrirDespesa(k){DESP_ABERTO=(DESP_ABERTO===k?null:k);verDespesas();}
+function abrirCategoria(k){CAT_ABERTO=(CAT_ABERTO===k?null:k);verConfig();}
+async function desfazer(id){
+  const {error}=await sb.from('parcelas').update({pago:false,data_pagamento:null}).eq('id',id);
+  if(error)return toast('Erro: '+error.message,true);
+  const p=D.parcelas.find(x=>x.id===id);if(p){p.pago=false;p.data_pagamento=null;}
+  toast('Parcela voltou para em aberto.');desenhar();
+}
+
+async function baixar(id){
+  const {error}=await sb.from('parcelas').update({pago:true,data_pagamento:iso(HOJE)}).eq('id',id);
+  if(error)return toast('Erro: '+error.message,true);
+  const p=D.parcelas.find(x=>x.id===id);if(p){p.pago=true;p.data_pagamento=iso(HOJE);}
+  toast('Parcela baixada.');desenhar();
+}
+
+/* ================= DESPESAS ================= */
+function verDespesas(){
+  const dp=despesasMes(ANO,MES), g=agrupaPorMatriz(dp.pc);
+  const jaGer=new Set(D.lancamentos.filter(l=>noMes(l.data,ANO,MES)&&l.recorrencia_id).map(l=>l.recorrencia_id));
+  const pend=D.recorrencias.filter(r=>r.ativo!==false&&!jaGer.has(r.id));
+  const ap=aPagar(ANO,MES);
+  const desp=D.lancamentos.filter(l=>l.tipo==='despesa'&&noMes(l.data,ANO,MES));
+
+  let h=`<h2><span class="q"></span>Despesas de ${MESES[MES]}</h2>
+  <div class="grade g4">
+    ${kpi('Total do mês',rsc(dp.total),`${desp.length} lançamentos`)}
+    ${kpi('Já pago',rsc(pagoMes(ANO,MES)),'quitado')}
+    ${kpi('A pagar',rsc(ap),'em aberto',ap?'av':'')}
+    ${kpi('Fatura de cartão',rsc(faturaTotal(ANO,MES)),'projetada')}
+  </div>
+  <h2><span class="q"></span>Todas as despesas por categoria matriz</h2>`;
+  if(!g.length) h+='<div class="vazio">Nenhuma despesa lançada neste mês.</div>';
+  else{
+    g.forEach(([m,o])=>{
+      const orfa=(m==='Sem categoria'), aberto=DESP_ABERTO===m;
+      const qtd=Object.keys(o.filhos).reduce((s,c)=>s+desp.filter(l=>l.categoria===c).length,0);
+      h+=`<div class="cartao" style="margin-bottom:8px;padding:0">
+        <button class="cabecalho" onclick="abrirDespesa('${esc(m).replace(/'/g,"&#39;")}')" aria-expanded="${aberto}">
+          <span class="seta ${aberto?'on':''}">▸</span>
+          <span style="flex:1;text-align:left"><strong>${esc(m)}</strong>${orfa?' <span class="tag al">arrumar</span>':''}
+            <span class="rotulo" style="font-size:10px;display:block;margin-top:2px">${qtd} lançamento${qtd>1?'s':''} · ${(o.total/dp.total*100).toFixed(0)}% do mês</span></span>
+          <span class="num" style="font-size:18px;white-space:nowrap">${rs(o.total)}</span>
+        </button>
+        <div class="corpo ${aberto?'':'oculto'}">`;
+      if(aberto){
+        h+=`<table class="desp"><thead><tr><th>Categoria</th><th>Descrição</th><th>Venc.</th>
+          <th>Situação</th><th class="d">Valor</th><th class="acoes"></th></tr></thead><tbody>`;
+        Object.keys(o.filhos).sort((a,b)=>o.filhos[b]-o.filhos[a]).forEach(cat=>{
+          desp.filter(l=>l.categoria===cat).sort((a,b)=>String(a.data).localeCompare(String(b.data))).forEach(l=>{
+            h+=`<tr>
+              <td>${orfa
+                ? `<select class="ed" onchange="adotarCategoria('${esc(l.categoria)}',this.value)"><option value="">${esc(l.categoria)} → escolher…</option>${matrizes('despesa').map(x=>`<option value="${x.id}">mover para ${esc(x.nome)}</option>`).join('')}</select>`
+                : `<span class="rotulo" style="font-size:10px">${esc(l.categoria)}</span>`}</td>
+              <td><input class="ed" value="${esc(l.descricao||'')}" onchange="up('lancamentos','${l.id}','descricao',this.value)"></td>
+              <td><input class="ed dt" type="date" value="${String(l.data).slice(0,10)}" onchange="up('lancamentos','${l.id}','data',this.value)"></td>
+              <td><button class="tag ${l.pago?'ok':'al'}" onclick="up('lancamentos','${l.id}','pago',${!l.pago})">${l.pago?'pago':'a pagar'}</button></td>
+              <td class="d"><input class="ed n lim" type="number" step="0.01" value="${l.valor}" onchange="upNum('lancamentos','${l.id}','valor',this.value)"></td>
+              <td class="acoes"><button class="x" onclick="del('lancamentos','${l.id}')" aria-label="Remover">✕</button></td></tr>`;});
+        });
+        h+='</tbody></table>';
+      }
+      h+='</div></div>';
+    });
+  }
+
+  h+=`<h2><span class="q"></span>Pagamentos fixos</h2>`;
+  h+=pend.length
+    ?`<div class="linhafina" style="margin-bottom:12px"><span><strong>${pend.length} fixos ainda não lançados</strong> em ${MESES[MES]}, somando ${rs(pend.reduce((s,r)=>s+ +r.valor,0))}.</span><button class="btn" onclick="gerarFixos()">Lançar todos</button></div>`
+    :`<div class="linhafina" style="margin-bottom:12px"><span>Todos os fixos de ${MESES[MES]} já foram lançados.</span></div>`;
+  h+=`<div class="cartao rolagem"><table><thead><tr>
+    <th>Descrição</th><th>Categoria</th><th class="d">Dia</th><th class="d">Valor</th><th>Este mês</th><th></th>
+  </tr></thead><tbody>`;
+  [...D.recorrencias].sort((a,b)=>(a.dia||0)-(b.dia||0)).forEach(r=>{h+=`<tr>
+    <td class="nome"><input class="ed nm" value="${esc(r.descricao)}" onchange="up('recorrencias','${r.id}','descricao',this.value)"></td>
+    <td><select class="ed" onchange="up('recorrencias','${r.id}','categoria',this.value)">${selCatAgrupado(r.categoria,'despesa')}</select></td>
+    <td class="d"><input class="ed n" style="width:44px" type="number" value="${r.dia}" onchange="upNum('recorrencias','${r.id}','dia',this.value)"></td>
+    <td class="d"><input class="ed n" style="width:104px" type="number" step="0.01" value="${r.valor}" onchange="upNum('recorrencias','${r.id}','valor',this.value)"></td>
+    <td>${jaGer.has(r.id)?'<span class="tag ok">lançado</span>':'<span class="tag al">pendente</span>'}</td>
+    <td><button class="x" onclick="del('recorrencias','${r.id}')" aria-label="Remover">✕</button></td></tr>`;});
+  h+=`</tbody></table></div>
+  <h2><span class="q"></span>Novo fixo</h2>
+  <div class="cartao"><div class="formlinha">
+    <div class="campo"><label>Descrição</label><input id="fDesc"></div>
+    <div class="campo"><label>Categoria</label><select id="fCat">${selCatAgrupado('','despesa')}</select></div>
+    <div class="campo"><label>Valor</label><input id="fValor" type="number" step="0.01"></div>
+    <div class="campo"><label>Dia</label><input id="fDia" type="number" value="5" min="1" max="28"></div>
+    <button class="btn" onclick="novoFixo()">Adicionar</button>
+  </div></div>`;
+  document.getElementById('v-desp').innerHTML=h;
+}
+/* Cria ou reaponta uma categoria orfa para dentro de uma matriz. */
+async function adotarCategoria(nome,parent_id){
+  if(!parent_id) return;
+  const pai=D.categorias.find(c=>c.id===parent_id);
+  const ja=D.categorias.find(c=>c.nome===nome);
+  if(ja){
+    const {error}=await sb.from('categorias').update({parent_id,matriz:false}).eq('id',ja.id);
+    if(error) return toast('Erro: '+error.message,true);
+    ja.parent_id=parent_id; ja.matriz=false;
+  } else {
+    const {data,error}=await sb.from('categorias').insert({nome,parent_id,matriz:false,
+      tipo:'despesa',escopo:pai?.escopo||'ambos',ordem:99}).select().single();
+    if(error) return toast('Erro: '+error.message,true);
+    D.categorias.push(data);
+  }
+  toast(`"${nome}" agora fica em ${pai?pai.nome:'a matriz escolhida'}.`);
+  desenhar();
+}
+
+async function novoFixo(){
+  const cat=document.getElementById('fCat').value;
+  const r={descricao:document.getElementById('fDesc').value.trim(),categoria:cat,
+    valor:+document.getElementById('fValor').value||0,dia:+document.getElementById('fDia').value||5,
+    tipo:'despesa',escopo:/pessoal/i.test(cat)?'pessoal':'empresa'};
+  if(!r.descricao)return toast('Informe a descrição.',true);
+  if(!r.valor)return toast('Informe o valor.',true);
+  const {data,error}=await sb.from('recorrencias').insert(r).select().single();
+  if(error)return toast('Erro: '+error.message,true);
+  D.recorrencias.push(data);['fDesc','fValor'].forEach(i=>document.getElementById(i).value='');
+  toast('Fixo cadastrado.');desenhar();
+}
+async function gerarFixos(){
+  const jaGer=new Set(D.lancamentos.filter(l=>noMes(l.data,ANO,MES)&&l.recorrencia_id).map(l=>l.recorrencia_id));
+  const pend=D.recorrencias.filter(r=>r.ativo!==false&&!jaGer.has(r.id));
+  if(!pend.length)return toast('Nada pendente.');
+  const novos=pend.map(r=>({data:iso(new Date(ANO,MES,Math.min(r.dia||5,28))),competencia:iso(new Date(ANO,MES,1)),
+    tipo:r.tipo,categoria:r.categoria,descricao:r.descricao,valor:r.valor,escopo:r.escopo,
+    produto_id:r.produto_id,pago:false,recorrencia_id:r.id}));
+  const {data,error}=await sb.from('lancamentos').insert(novos).select();
+  if(error)return toast('Erro: '+error.message,true);
+  D.lancamentos.push(...data);toast(`${data.length} fixos lançados.`);desenhar();
+}
+
+/* ================= LANÇAMENTOS ================= */
+function filtrados(){
+  return D.lancamentos.filter(l=>{
+    const d=String(l.data).slice(0,10);
+    if(FILTRO.ini||FILTRO.fim){
+      if(FILTRO.ini&&d<FILTRO.ini)return false;
+      if(FILTRO.fim&&d>FILTRO.fim)return false;
+    } else if(!noMes(l.data,ANO,MES)) return false;
+    if(FILTRO.tipo&&l.tipo!==FILTRO.tipo)return false;
+    if(FILTRO.cat&&matrizDe(l.categoria)!==FILTRO.cat&&l.categoria!==FILTRO.cat)return false;
+    return true;
+  }).sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+}
+function verLancamentos(){
+  const lst=filtrados();
+  const ent=lst.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+ +l.valor,0);
+  const des=lst.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+ +l.valor,0);
+  const todasM=[...new Set(D.categorias.filter(c=>c.matriz).map(c=>c.nome))];
+  let h=`<h2><span class="q"></span>Novo lançamento</h2>
+  <div class="cartao"><div class="formlinha">
+    <div class="campo"><label>Data</label><input id="lData" type="date" value="${iso(HOJE)}"></div>
+    <div class="campo"><label>Tipo</label><select id="lTipo" onchange="trocaCat()"><option value="despesa">Despesa</option><option value="entrada">Entrada</option></select></div>
+    <div class="campo"><label>Categoria</label><select id="lCat">${selCatAgrupado('','despesa')}</select></div>
+    <div class="campo"><label>Descrição</label><input id="lDesc"></div>
+    <div class="campo"><label>Produto</label><select id="lProd"><option value="">—</option>${D.produtos.map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('')}</select></div>
+    <div class="campo"><label>Valor</label><input id="lValor" type="number" step="0.01"></div>
+    <div class="campo"><label>Pago</label><select id="lPago"><option value="true">Sim</option><option value="false">Não</option></select></div>
+    <button class="btn" onclick="novoLanc()">Adicionar</button>
+  </div></div>
+
+  <h2><span class="q"></span>Filtros e relatório</h2>
+  <div class="cartao" id="filtros"><div class="formlinha">
+    <div class="campo"><label>De</label><input type="date" value="${FILTRO.ini}" onchange="setFiltro('ini',this.value)"></div>
+    <div class="campo"><label>Até</label><input type="date" value="${FILTRO.fim}" onchange="setFiltro('fim',this.value)"></div>
+    <div class="campo"><label>Tipo</label><select onchange="setFiltro('tipo',this.value)">
+      <option value="">Todos</option><option value="entrada"${FILTRO.tipo==='entrada'?' selected':''}>Entradas</option>
+      <option value="despesa"${FILTRO.tipo==='despesa'?' selected':''}>Saídas</option></select></div>
+    <div class="campo"><label>Categoria matriz</label><select onchange="setFiltro('cat',this.value)">
+      <option value="">Todas</option>${todasM.map(m=>`<option value="${esc(m)}"${FILTRO.cat===m?' selected':''}>${esc(m)}</option>`).join('')}</select></div>
+    <button class="btnv" onclick="limparFiltro()">Limpar</button>
+    <button class="btn" onclick="window.print()">Gerar relatório PDF</button>
+  </div>
+  <p class="nota">Sem datas preenchidas o filtro usa o mês selecionado no topo. O relatório abre a janela de impressão, escolha "Salvar como PDF".</p></div>
+
+  <h2><span class="q"></span>${FILTRO.ini||FILTRO.fim?'Período filtrado':MESES[MES]+' '+ANO} · entradas ${rsc(ent)} · saídas ${rsc(des)} · resultado ${rsc(ent-des)}</h2>`;
+  if(!lst.length){h+='<div class="vazio">Nenhum lançamento com esses filtros.</div>';document.getElementById('v-lanc').innerHTML=h;return;}
+
+  const porCat={};lst.forEach(l=>{porCat[l.categoria]=(porCat[l.categoria]||0)+ +l.valor});
+  const g=agrupaPorMatriz(porCat);
+  h+=`<div class="cartao rolagem"><table><thead><tr>
+    <th>Data</th><th>Categoria</th><th>Descrição</th><th>Tipo</th><th>Situação</th><th class="d">Valor</th><th></th>
+  </tr></thead><tbody>`;
+  g.forEach(([m,o])=>{
+    h+=`<tr class="matriz"><td colspan="5">${esc(m)}</td><td class="d">${rs(o.total)}</td><td></td></tr>`;
+    Object.keys(o.filhos).forEach(cat=>{
+      lst.filter(l=>l.categoria===cat).forEach(l=>{h+=`<tr class="filho">
+        <td><input class="ed dt" type="date" value="${String(l.data).slice(0,10)}" onchange="up('lancamentos','${l.id}','data',this.value)"></td>
+        <td><select class="ed" onchange="up('lancamentos','${l.id}','categoria',this.value)">${selCatAgrupado(l.categoria,l.tipo)}</select></td>
+        <td><input class="ed" value="${esc(l.descricao||'')}" onchange="up('lancamentos','${l.id}','descricao',this.value)"></td>
+        <td>${l.tipo==='entrada'?'<span class="tag ok">entrada</span>':'<span class="tag">saída</span>'}</td>
+        <td><button class="tag ${l.pago?'ok':'al'}" onclick="up('lancamentos','${l.id}','pago',${!l.pago})">${l.pago?'pago':'a pagar'}</button></td>
+        <td class="d"><input class="ed n" style="width:104px" type="number" step="0.01" value="${l.valor}" onchange="upNum('lancamentos','${l.id}','valor',this.value)"></td>
+        <td><button class="x" onclick="del('lancamentos','${l.id}')" aria-label="Remover">✕</button></td></tr>`;});
+    });
+  });
+  h+='</tbody></table></div>';
+  document.getElementById('v-lanc').innerHTML=h;
+}
+function setFiltro(k,v){FILTRO[k]=v;verLancamentos()}
+function limparFiltro(){FILTRO={ini:'',fim:'',cat:'',tipo:''};verLancamentos()}
+function trocaCat(){document.getElementById('lCat').innerHTML=selCatAgrupado('',document.getElementById('lTipo').value)}
+async function novoLanc(){
+  const cat=document.getElementById('lCat').value;
+  const r={data:document.getElementById('lData').value,competencia:document.getElementById('lData').value,
+    tipo:document.getElementById('lTipo').value,categoria:cat,
+    descricao:document.getElementById('lDesc').value.trim()||null,
+    escopo:/pessoal/i.test(cat)?'pessoal':'empresa',
+    produto_id:document.getElementById('lProd').value||null,
+    valor:+document.getElementById('lValor').value||0,
+    pago:document.getElementById('lPago').value==='true'};
+  if(!r.data)return toast('Informe a data.',true);
+  if(!r.valor)return toast('Informe o valor.',true);
+  const {data,error}=await sb.from('lancamentos').insert(r).select().single();
+  if(error)return toast('Erro: '+error.message,true);
+  D.lancamentos.push(data);['lDesc','lValor'].forEach(i=>document.getElementById(i).value='');
+  toast('Lançamento adicionado.');desenhar();
+}
+
+/* ================= CARTÕES ================= */
+function abrirCartao(id){CART_ABERTO=(CART_ABERTO===id?null:id);verCartoes();}
+function verCartoes(){
+  const ref=new Date(ANO,MES,1);
+  const restante=D.parcelamentos.reduce((s,p)=>{const n=dif(dObj(p.primeira_competencia),ref);
+    return s+(n>=0&&n<p.total_parcelas?+p.valor_parcela*(p.total_parcelas-n):0)},0);
+  let h=`<h2><span class="q"></span>Cartões · ${MESES[MES]} ${ANO}</h2>
+  <div class="grade g4">
+    ${kpi('Fatura total',rsc(faturaTotal(ANO,MES)),`${D.cartoes.length} cartões`)}
+    ${kpi('Em 3 meses',rsc(faturaTotal(ANO,MES+3)),'sem parcelar mais nada')}
+    ${kpi('Em 6 meses',rsc(faturaTotal(ANO,MES+6)),'sem parcelar mais nada')}
+    ${kpi('Dívida restante',rsc(restante),'tudo que ainda falta')}
+  </div>
+  <h2><span class="q"></span>Cada cartão separado</h2>`;
+  D.cartoes.forEach(c=>{
+    const ps=D.parcelamentos.filter(p=>p.cartao_id===c.id).map(p=>{
+      const ini=dObj(p.primeira_competencia), n=dif(ini,ref)+1;
+      return {...p,atual:n,fim:new Date(ini.getFullYear(),ini.getMonth()+p.total_parcelas-1,1),viva:n>=1&&n<=p.total_parcelas};
+    }).filter(p=>p.viva).sort((a,b)=>+b.valor_parcela-+a.valor_parcela);
+    const asn=D.assinaturas.filter(a=>a.cartao_id===c.id&&a.ativo!==false);
+    const fat=faturaCartao(c.id,ANO,MES);
+    if(!ps.length&&!asn.length) return;
+    const falta=ps.reduce((s,p)=>s+ +p.valor_parcela*(p.total_parcelas-p.atual+1),0);
+    const livre=ps.length?ps.reduce((a,b)=>a.fim>b.fim?a:b).fim:null;
+    const aberto=CART_ABERTO===c.id;
+    h+=`<div class="cartao" style="margin-bottom:10px;padding:0">
+      <button class="cabecalho" onclick="abrirCartao('${c.id}')" aria-expanded="${aberto}">
+        <span class="seta ${aberto?'on':''}">▸</span>
+        <span style="flex:1;text-align:left;min-width:0">
+          <strong style="font-size:15px">${esc(c.nome)}</strong>
+          <span class="rotulo" style="font-size:10px;display:block;margin-top:2px">${esc(c.bandeira||'')} · vence dia ${c.dia_vencimento} · ${c.escopo}</span>
+        </span>
+        <span style="text-align:right;white-space:nowrap">
+          <span class="num" style="font-size:19px">${rs(fat)}</span>
+          <span class="rotulo" style="font-size:10px;display:block;margin-top:2px">${ps.length} parcelamentos · falta ${rsc(falta)}${livre?` · livre ${MESC[livre.getMonth()]}/${String(livre.getFullYear()).slice(2)}`:''}</span>
+        </span>
+      </button>
+      <div class="corpo ${aberto?'':'oculto'}">`;
+    if(ps.length){
+      h+=`<div class="rolagem"><table><thead><tr><th>Compra</th><th>Categoria</th><th class="d">Parcela</th><th>Quita</th><th class="d">Por mês</th><th class="d">Falta</th><th></th></tr></thead><tbody>`;
+      ps.forEach(p=>{h+=`<tr>
+        <td class="nome"><input class="ed nm" value="${esc(p.descricao)}" onchange="up('parcelamentos','${p.id}','descricao',this.value)"></td>
+        <td><input class="ed" value="${esc(p.categoria||'')}" onchange="up('parcelamentos','${p.id}','categoria',this.value)"></td>
+        <td class="d">${p.atual}/<input class="ed n" style="width:38px" type="number" value="${p.total_parcelas}" onchange="upNum('parcelamentos','${p.id}','total_parcelas',this.value)"></td>
+        <td class="num">${MESC[p.fim.getMonth()]}/${String(p.fim.getFullYear()).slice(2)}</td>
+        <td class="d"><input class="ed n" style="width:96px" type="number" step="0.01" value="${p.valor_parcela}" onchange="upNum('parcelamentos','${p.id}','valor_parcela',this.value)"></td>
+        <td class="d">${rs(+p.valor_parcela*(p.total_parcelas-p.atual+1))}</td>
+        <td><button class="x" onclick="del('parcelamentos','${p.id}')" aria-label="Remover">✕</button></td></tr>`;});
+      h+='</tbody></table></div>';
+    }
+    if(asn.length) h+=`<div class="leg" style="margin-top:10px">${asn.map(a=>`<div class="it">
+      <span class="pt" style="background:#4a4a4a"></span><span class="nm">${esc(a.descricao)} <span class="rotulo" style="font-size:10px">assinatura</span></span>
+      <span class="vl">${rs(a.valor)}</span><span class="pc"><button class="x" onclick="del('assinaturas','${a.id}')" aria-label="Remover">✕</button></span></div>`).join('')}</div>`;
+    h+='</div></div>';
+  });
+
+  h+=`<h2><span class="q"></span>Ler fatura pelo print</h2>
+  <div class="cartao">
+    <div class="formlinha" style="margin-bottom:12px">
+      <div class="campo"><label>Cartão</label><select id="impCart">${D.cartoes.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
+    </div>
+    <label for="impFile" class="dropzona" id="zona" style="display:block;cursor:pointer">
+      Clique para escolher os prints da fatura, ou arraste aqui. Até 8 imagens por vez.
+    </label>
+    <input id="impFile" type="file" accept="image/*" multiple class="oculto" onchange="carregarPrints(this.files)">
+    <div class="miniaturas" id="minis"></div>
+    <div style="margin-top:14px"><button class="btn" id="btLer" onclick="lerPrints()" ${PRINTS.length?'':'disabled'}>
+      ${PRINTS.length?`Ler ${PRINTS.length} print(s) com IA`:'Escolha os prints primeiro'}</button></div>
+    <div id="resultadoImp"></div>
+    <p class="nota">A IA lê as imagens e separa parcelamento de assinatura sozinha. Você confere a lista antes de salvar. Precisa da Edge Function publicada.</p>
+  </div>
+
+  <h2><span class="q"></span>Novo cartão</h2>
+  <div class="cartao"><div class="formlinha">
+    <div class="campo"><label>Nome</label><input id="kNome"></div>
+    <div class="campo"><label>Bandeira</label><input id="kBand"></div>
+    <div class="campo"><label>Dia de vencimento</label><input id="kDia" type="number" value="10" min="1" max="28"></div>
+    <div class="campo"><label>Escopo</label><select id="kEsc"><option value="pessoal">Pessoal</option><option value="empresa">Empresa</option></select></div>
+    <button class="btn" onclick="novoCartao()">Adicionar cartão</button>
+  </div></div>
+
+  <h2><span class="q"></span>Novo parcelamento manual</h2>
+  <div class="cartao"><div class="formlinha">
+    <div class="campo"><label>Cartão</label><select id="pCart">${D.cartoes.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
+    <div class="campo"><label>Descrição</label><input id="pDesc"></div>
+    <div class="campo"><label>Categoria</label><input id="pCat" placeholder="Compras"></div>
+    <div class="campo"><label>Valor da parcela</label><input id="pValor" type="number" step="0.01"></div>
+    <div class="campo"><label>Total de parcelas</label><input id="pTot" type="number" value="10"></div>
+    <div class="campo"><label>1ª parcela em</label><input id="pIni" type="month" value="${chave(ANO,MES)}"></div>
+    <button class="btn" onclick="novoParcelamento()">Adicionar</button>
+  </div></div>`;
+  document.getElementById('v-cart').innerHTML=h;
+  const z=document.getElementById('zona');
+  if(z){
+    z.ondragover=e=>{e.preventDefault();z.classList.add('ativo')};
+    z.ondragleave=()=>z.classList.remove('ativo');
+    z.ondrop=e=>{e.preventDefault();z.classList.remove('ativo');carregarPrints(e.dataTransfer.files)};
+  }
+  desenhaMinis();
+}
+function carregarPrints(files){
+  const arr=[...files].filter(f=>f.type.startsWith('image/')).slice(0,8);
+  if(!arr.length)return toast('Escolha arquivos de imagem.',true);
+  PRINTS=[];let lidos=0;
+  arr.forEach(f=>{
+    const r=new FileReader();
+    r.onload=()=>{PRINTS.push({tipo:f.type,dados:String(r.result).split(',')[1],url:r.result});
+      if(++lidos===arr.length){desenhaMinis();
+        const b=document.getElementById('btLer');if(b){b.disabled=false;b.textContent=`Ler ${PRINTS.length} print(s) com IA`;}}};
+    r.readAsDataURL(f);
+  });
+}
+function desenhaMinis(){
+  const el=document.getElementById('minis');if(!el)return;
+  el.innerHTML=PRINTS.map(p=>`<img src="${p.url}" alt="">`).join('');
+}
+async function lerPrints(){
+  if(!PRINTS.length)return toast('Escolha os prints primeiro.',true);
+  const url=D.config.agente_url;
+  if(!url)return toast('Configure a URL do agente em Configurações.',true);
+  const b=document.getElementById('btLer'); b.disabled=true; b.innerHTML='<span class="girando"></span>Lendo';
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    const r=await fetch(url,{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${session?.access_token||SUPABASE_KEY}`},
+      body:JSON.stringify({modo:'fatura',mes:`${MESES[MES]} ${ANO}`,
+        imagens:PRINTS.map(p=>({tipo:p.tipo,dados:p.dados}))})});
+    const j=await r.json();
+    if(j.erro) throw new Error(j.erro);
+    mostrarLidas(j.linhas||[]);
+  }catch(e){
+    document.getElementById('resultadoImp').innerHTML=`<div class="alerta critico" style="margin-top:14px"><div><strong>Não consegui ler.</strong><br>${esc(String(e.message||e))}</div></div>`;
+  }
+  b.disabled=false; b.textContent=`Ler ${PRINTS.length} print(s) com IA`;
+}
+let LIDAS=[];
+function mostrarLidas(linhas){
+  LIDAS=linhas.filter(l=>+l.valor>0);
+  const el=document.getElementById('resultadoImp');
+  if(!LIDAS.length){el.innerHTML='<div class="vazio">A IA não encontrou linhas legíveis.</div>';return;}
+  const parc=LIDAS.filter(l=>l.parcela_total>1), ass=LIDAS.filter(l=>!(l.parcela_total>1));
+  el.innerHTML=`<h2 style="margin-top:22px"><span class="q"></span>${LIDAS.length} linhas lidas · confira antes de salvar</h2>
+  <div class="rolagem"><table><thead><tr><th>Descrição</th><th>Categoria</th><th class="d">Parcela</th><th class="d">Valor</th><th>Vira</th></tr></thead><tbody>
+  ${LIDAS.map((l,i)=>`<tr>
+    <td class="nome"><input class="ed nm" value="${esc(l.descricao)}" onchange="LIDAS[${i}].descricao=this.value"></td>
+    <td><input class="ed" value="${esc(l.categoria||'Outros')}" onchange="LIDAS[${i}].categoria=this.value"></td>
+    <td class="d">${l.parcela_total>1?`<input class="ed n" style="width:34px" type="number" value="${l.parcela_atual||1}" onchange="LIDAS[${i}].parcela_atual=+this.value">/<input class="ed n" style="width:34px" type="number" value="${l.parcela_total}" onchange="LIDAS[${i}].parcela_total=+this.value">`:'—'}</td>
+    <td class="d"><input class="ed n" style="width:96px" type="number" step="0.01" value="${l.valor}" onchange="LIDAS[${i}].valor=+this.value"></td>
+    <td>${l.parcela_total>1?'<span class="tag al">parcelamento</span>':'<span class="tag">assinatura</span>'}</td>
+  </tr>`).join('')}</tbody></table></div>
+  <div style="margin-top:14px"><button class="btn" onclick="salvarLidas()">Salvar ${parc.length} parcelamentos e ${ass.length} assinaturas</button>
+  <button class="btnv" onclick="LIDAS=[];document.getElementById('resultadoImp').innerHTML=''">Descartar</button></div>`;
+}
+async function salvarLidas(){
+  const cartao_id=document.getElementById('impCart').value;
+  const parc=LIDAS.filter(l=>l.parcela_total>1).map(l=>{
+    const at=Math.max(1,+l.parcela_atual||1);
+    return {cartao_id,descricao:l.descricao||'Compra',categoria:l.categoria||'Outros',
+      valor_parcela:+l.valor,total_parcelas:+l.parcela_total,
+      primeira_competencia:iso(new Date(ANO,MES-(at-1),1)),escopo:'pessoal'};});
+  const ass=LIDAS.filter(l=>!(l.parcela_total>1)).map(l=>
+    ({cartao_id,descricao:l.descricao||'Lançamento',valor:+l.valor,escopo:'pessoal',ativo:true}));
+  if(parc.length){const{data,error}=await sb.from('parcelamentos').insert(parc).select();
+    if(error)return toast('Erro: '+error.message,true);D.parcelamentos.push(...data);}
+  if(ass.length){const{data,error}=await sb.from('assinaturas').insert(ass).select();
+    if(error)return toast('Erro: '+error.message,true);D.assinaturas.push(...data);}
+  LIDAS=[];PRINTS=[];toast(`${parc.length+ass.length} linhas salvas.`);desenhar();
+}
+async function novoCartao(){
+  const r={nome:document.getElementById('kNome').value.trim(),bandeira:document.getElementById('kBand').value.trim()||null,
+    dia_vencimento:+document.getElementById('kDia').value||10,escopo:document.getElementById('kEsc').value};
+  if(!r.nome)return toast('Informe o nome do cartão.',true);
+  const {data,error}=await sb.from('cartoes').insert(r).select().single();
+  if(error)return toast('Erro: '+error.message,true);
+  D.cartoes.push(data);
+  await sb.from('categorias').insert({nome:'Cartão · '+r.nome,tipo:'despesa',escopo:r.escopo,
+    parent_id:D.categorias.find(c=>c.nome==='Cartões'&&c.matriz)?.id||null,matriz:false,ordem:50});
+  const {data:cat}=await sb.from('categorias').select('*');D.categorias=cat||D.categorias;
+  document.getElementById('kNome').value='';toast('Cartão adicionado com categoria própria.');desenhar();
+}
+async function novoParcelamento(){
+  const mes=document.getElementById('pIni').value;
+  const r={cartao_id:document.getElementById('pCart').value,descricao:document.getElementById('pDesc').value.trim(),
+    categoria:document.getElementById('pCat').value.trim()||'Outros',
+    valor_parcela:+document.getElementById('pValor').value||0,
+    total_parcelas:Math.max(1,+document.getElementById('pTot').value||1),
+    primeira_competencia:mes?mes+'-01':null,escopo:'pessoal'};
+  if(!r.descricao)return toast('Informe a descrição.',true);
+  if(!r.valor_parcela)return toast('Informe o valor da parcela.',true);
+  const {data,error}=await sb.from('parcelamentos').insert(r).select().single();
+  if(error)return toast('Erro: '+error.message,true);
+  D.parcelamentos.push(data);['pDesc','pCat','pValor'].forEach(i=>document.getElementById(i).value='');
+  toast('Parcelamento cadastrado.');desenhar();
+}
+
+/* ================= INVESTIMENTOS ================= */
+function verInvestimentos(){
+  const caixa=somaCaixa(), investido=somaInvestido(), total=reservaTotal();
+  let h=`<h2><span class="q"></span>Reserva</h2>
+  <div class="grade g3">
+    ${hero('Caixa em conta',rsc(caixa),'carteiras marcadas como caixa mais o saldo informado','b')}
+    ${hero('Total investido',rsc(investido),'tudo que não é caixa','')}
+    ${hero('Reserva total',rsc(total),'caixa mais investido','big')}
+  </div>
+  <h2><span class="q"></span>Evolução mês a mês</h2>
+  <div class="cartao">
+    <div class="grafico"><canvas id="gInv" role="img" aria-label="Evolução da reserva mês a mês"></canvas></div>
+    <div class="formlinha" style="margin-top:14px">
+      <button class="btn" onclick="registrarSnapshot()">Registrar posição de ${MESES[MES]}</button>
+      <span class="nota" style="margin:0">Registre uma vez por mês para o gráfico crescer.</span>
+    </div>
+  </div>
+  <h2><span class="q"></span>Por banco · tipo "Caixa" conta como conta corrente</h2>
+  <div class="cartao rolagem"><table><thead><tr>
+    <th>Banco</th><th>Tipo</th><th class="d">Valor</th><th class="d">%</th><th>Atualizado</th><th></th>
+  </tr></thead><tbody>`;
+  [...D.investimentos].sort((a,b)=>+b.valor-+a.valor).forEach(i=>{h+=`<tr>
+    <td class="nome"><input class="ed nm" value="${esc(i.banco)}" onchange="up('investimentos','${i.id}','banco',this.value)"></td>
+    <td><select class="ed" onchange="up('investimentos','${i.id}','tipo',this.value)">
+      ${['Caixa','Reserva','Investimento'].map(t=>`<option value="${t}"${(i.tipo||'')===t?' selected':''}>${t}</option>`).join('')}
+      ${['Caixa','Reserva','Investimento'].includes(i.tipo)?'':`<option value="${esc(i.tipo||'')}" selected>${esc(i.tipo||'')}</option>`}
+    </select></td>
+    <td class="d"><input class="ed n" style="width:120px" type="number" step="0.01" value="${i.valor}" onchange="upNum('investimentos','${i.id}','valor',this.value)"></td>
+    <td class="d">${total?(+i.valor/total*100).toFixed(1):0}%</td>
+    <td><input class="ed dt" type="date" value="${String(i.atualizado_em||'').slice(0,10)}" onchange="up('investimentos','${i.id}','atualizado_em',this.value)"></td>
+    <td><button class="x" onclick="del('investimentos','${i.id}')" aria-label="Remover">✕</button></td></tr>`;});
+  h+=`</tbody></table></div>
+  <h2><span class="q"></span>Nova carteira</h2>
+  <div class="cartao"><div class="formlinha">
+    <div class="campo"><label>Banco</label><input id="iBanco"></div>
+    <div class="campo"><label>Tipo</label><select id="iTipo"><option>Caixa</option><option selected>Reserva</option><option>Investimento</option></select></div>
+    <div class="campo"><label>Valor</label><input id="iValor" type="number" step="0.01"></div>
+    <button class="btn" onclick="novoInvestimento()">Adicionar</button>
+  </div></div>`;
+  document.getElementById('v-inv').innerHTML=h;
+  graficoInvestimentos();
+}
+function graficoInvestimentos(){
+  const hist=[...D.investimentos_hist].sort((a,b)=>a.ano_mes.localeCompare(b.ano_mes)).slice(-12);
+  if(!hist.length){
+    const el=document.getElementById('gInv');
+    if(el)el.closest('.grafico').innerHTML='<div class="vazio">Nenhuma posição registrada ainda. Clique no botão abaixo para começar o histórico.</div>';
+    return;}
+  const lb=hist.map(x=>{const[a,m]=x.ano_mes.split('-');return `${MESC[+m-1]}/${a.slice(2)}`});
+  pinta('gInv','line',{labels:lb,datasets:[
+    {label:'Reserva total',data:hist.map(x=>+x.caixa+ +x.investido+ +x.reserva),borderColor:'#44CF17',backgroundColor:'rgba(68,207,23,.10)',borderWidth:2,fill:true,pointRadius:4,pointBackgroundColor:'#44CF17',tension:.2},
+    {label:'Caixa',data:hist.map(x=>+x.caixa),borderColor:'#4E9AE8',borderWidth:2,fill:false,pointRadius:4,pointBackgroundColor:'#4E9AE8',tension:.2}
+  ]},{plugins:{legend:{display:true,position:'bottom',labels:{color:'#7e8183',font:{family:'monospace',size:11},boxWidth:10,padding:14}},
+    tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${rsc(c.parsed.y)}`}}}});
+}
+async function registrarSnapshot(){
+  const linha={ano_mes:chave(ANO,MES),caixa:somaCaixa(),
+    investido:D.investimentos.filter(i=>/investimento/i.test(i.tipo||'')).reduce((s,i)=>s+ +i.valor,0),
+    reserva:D.investimentos.filter(i=>/reserva/i.test(i.tipo||'')).reduce((s,i)=>s+ +i.valor,0)};
+  const {error}=await sb.from('investimentos_hist').upsert(linha,{onConflict:'ano_mes'});
+  if(error)return toast('Erro: '+error.message,true);
+  const i=D.investimentos_hist.findIndex(x=>x.ano_mes===linha.ano_mes);
+  if(i>=0)D.investimentos_hist[i]=linha; else D.investimentos_hist.push(linha);
+  toast(`Posição de ${MESES[MES]} registrada.`);desenhar();
+}
+async function novoInvestimento(){
+  const r={banco:document.getElementById('iBanco').value.trim(),
+    tipo:document.getElementById('iTipo').value,
+    valor:+document.getElementById('iValor').value||0,atualizado_em:iso(HOJE)};
+  if(!r.banco)return toast('Informe o banco.',true);
+  const {data,error}=await sb.from('investimentos').insert(r).select().single();
+  if(error)return toast('Erro: '+error.message,true);
+  D.investimentos.push(data);['iBanco','iValor'].forEach(i=>document.getElementById(i).value='');
+  toast('Carteira adicionada.');desenhar();
+}
+
+/* ================= CONFIG ================= */
+function verConfig(){
+  const c=D.config;
+  document.getElementById('v-conf').innerHTML=`
+  ${!c.onboarding_ok?`<div class="linhafina" style="margin-bottom:16px;border-left-color:var(--ambar);display:block">
+    <strong>Bem-vindo. Faça isto uma vez e o painel fica com a sua cara.</strong>
+    <div style="margin-top:8px;font-size:13px;line-height:1.9;color:var(--medio)">
+      1. Coloque o nome do seu negócio e, se quiser, a logo e as cores.<br>
+      2. Defina a meta mensal e a alíquota que seu contador usa.<br>
+      3. Confira os planos e os produtos, renomeie o que não combinar com você.<br>
+      4. Cadastre seus gastos fixos na aba Despesas e seus clientes na aba Contratos.
+    </div>
+    <button class="btn" style="margin-top:12px" onclick="concluirOnboarding()">Já configurei, pode esconder isto</button>
+  </div>`:''}
+  <h2><span class="q"></span>Identidade</h2>
+  <div class="cartao">
+    <div class="formlinha" style="margin-bottom:14px">
+      <div class="campo"><label>Logo</label>
+        <input id="cLogoFile" type="file" accept="image/*" onchange="subirLogo(this.files[0])"></div>
+      <div class="campo"><label>Ou cole a URL</label><input id="cLogo" value="${esc(c.logo_url||'')}" placeholder="https://..."></div>
+      ${c.logo_url?`<div style="padding-bottom:6px"><img src="${esc(c.logo_url)}" alt="Logo atual" style="height:38px;border:1px solid var(--linha)"></div>`:''}
+    </div>
+    <div class="formlinha">
+      <div class="campo"><label>Nome do negócio</label><input id="cNome" value="${esc(c.negocio||'')}"></div>
+      <div class="campo"><label>Razão social</label><input id="cRazao" value="${esc(c.razao_social||'')}"></div>
+      <div class="campo"><label>Cor de destaque</label><input id="cCor" type="color" value="${esc(c.cor_primaria||'#44CF17')}"></div>
+      <div class="campo"><label>Cor de fundo</label><input id="cFundo" type="color" value="${esc(c.cor_fundo||'#000000')}"></div>
+  
+    </div>
+    <p class="nota">Escolha um arquivo e ele sobe direto para o Supabase Storage. A URL é preenchida sozinha.</p>
+  </div>
+
+  <h2><span class="q"></span>Números do negócio</h2>
+  <div class="cartao"><div class="formlinha">
+    <div class="campo"><label>Saldo extra em conta</label><input id="cCaixa" type="number" step="0.01" value="${c.caixa_empresa||0}"></div>
+    <div class="campo"><label>Meta padrão</label><input id="cMeta" type="number" step="0.01" value="${c.meta_mensal||0}"></div>
+    <div class="campo"><label>Alíquota (%)</label><input id="cAliq" type="number" step="0.01" value="${c.aliquota||0}"></div>
+    <div class="campo"><label>Base declarada</label><input id="cBase" type="number" step="0.01" value="${c.base_declarada||0}"></div>
+    <div class="campo"><label>URL do agente (opcional)</label><input id="cAgente" value="${esc(c.agente_url||'')}"></div>
+  </div>
+  <div class="formlinha" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--linha)">
+    <div class="campo"><label>Tenho sócio</label><select id="cSocios"><option value="false"${!c.tem_socios?' selected':''}>Não</option><option value="true"${c.tem_socios?' selected':''}>Sim</option></select></div>
+    <div class="campo"><label>Nome do sócio</label><input id="cSocioNome" value="${esc(c.socio_nome||'')}"></div>
+    <div class="campo"><label>Percentual dele (%)</label><input id="cSocioPc" type="number" step="0.01" value="${c.socio_percent||0}"></div>
+    <div class="campo"><label>Meses de repasse</label><input id="cRepasse" value="${esc(c.repasse_meses||'1,4,7,10')}"></div>
+  </div>
+  <div style="margin-top:14px"><button class="btn" onclick="salvarConfig()">Salvar</button></div></div>
+
+  <h2><span class="q"></span>Produtos</h2>
+  <div class="cartao rolagem"><table><thead><tr>
+    <th>Produto</th><th>Cor</th><th class="d">Contratos</th><th class="d">MRR</th><th>Ativo</th><th></th>
+  </tr></thead><tbody>
+  ${D.produtos.map(p=>{const cs=D.contratos.filter(x=>x.status==='ativo'&&x.produto_id===p.id);
+    return `<tr>
+    <td class="nome"><input class="ed nm" value="${esc(p.nome)}" onchange="up('produtos','${p.id}','nome',this.value)"></td>
+    <td><input class="ed" type="color" style="width:52px;padding:1px" value="${esc(p.cor||'#44CF17')}" onchange="up('produtos','${p.id}','cor',this.value)"></td>
+    <td class="d">${cs.length}</td>
+    <td class="d">${rsc(cs.reduce((s,x)=>s+ +x.valor_total/Math.max(1,x.meses),0))}</td>
+    <td><button class="tag ${p.ativo!==false?'ok':'mal'}" onclick="up('produtos','${p.id}','ativo',${p.ativo===false})">${p.ativo!==false?'ativo':'inativo'}</button></td>
+    <td><button class="x" onclick="apagarProduto('${p.id}',${cs.length})" aria-label="Remover">✕</button></td></tr>`}).join('')}
+  </tbody></table></div>
+  <div class="cartao" style="margin-top:12px"><div class="formlinha">
+    <div class="campo"><label>Novo produto</label><input id="prNome"></div>
+    <div class="campo"><label>Cor</label><input id="prCor" type="color" value="#44CF17"></div>
+    <button class="btn" onclick="novoProduto()">Adicionar produto</button>
+  </div><p class="nota">Produto inativo some dos formulários novos mas continua nos contratos antigos. Só dá para apagar produto sem contrato ativo.</p></div>
+
+  <h2><span class="q"></span>Planos · a duração dos seus contratos</h2>
+  <div class="cartao"><table class="cats"><thead><tr>
+    <th>Plano</th><th class="d">Meses</th><th class="d">Parcelas</th><th>Ativo</th><th class="acoes"></th>
+  </tr></thead><tbody>
+  ${D.planos.map(p=>`<tr>
+    <td><input class="ed nm" value="${esc(p.nome)}" onchange="up('planos','${p.id}','nome',this.value)"></td>
+    <td class="d"><input class="ed n mini" type="number" value="${p.meses}" onchange="upNum('planos','${p.id}','meses',this.value)"></td>
+    <td class="d"><input class="ed n mini" type="number" value="${p.parcelas_padrao??''}" placeholder="${Math.max(p.meses-1,0)}" onchange="upNum('planos','${p.id}','parcelas_padrao',this.value)"></td>
+    <td><button class="tag ${p.ativo!==false?'ok':'mal'}" onclick="up('planos','${p.id}','ativo',${p.ativo===false})">${p.ativo!==false?'ativo':'inativo'}</button></td>
+    <td class="acoes"><button class="x" onclick="del('planos','${p.id}')" aria-label="Remover">✕</button></td>
+  </tr>`).join('')}
+  </tbody></table></div>
+  <div class="cartao" style="margin-top:12px"><div class="formlinha">
+    <div class="campo"><label>Novo plano</label><input id="plNome" placeholder="Quadrimestral"></div>
+    <div class="campo"><label>Meses</label><input id="plMeses" type="number" value="4"></div>
+    <div class="campo"><label>Parcelas</label><input id="plParc" type="number" value="4"></div>
+    <button class="btn" onclick="novoPlano()">Adicionar plano</button>
+  </div><p class="nota">Mensal, trimestral, semestral e anual já vêm prontos. Crie quantos quiser, com a duração que fizer sentido no seu negócio.</p></div>
+
+  <h2><span class="q"></span>Categorias · clique na matriz para abrir</h2>
+  ${matrizes('despesa').concat(matrizes('entrada')).map(m=>{
+    const fs=filhosDe(m.id), aberto=CAT_ABERTO===m.id;
+    return `<div class="cartao" style="margin-bottom:8px;padding:0">
+      <button class="cabecalho" onclick="abrirCategoria('${m.id}')" aria-expanded="${aberto}">
+        <span class="seta ${aberto?'on':''}">▸</span>
+        <span style="flex:1;text-align:left"><strong>${esc(m.nome)}</strong>
+          <span class="rotulo" style="font-size:10px;display:block;margin-top:2px">${fs.length} categoria${fs.length===1?'':'s'} · ${m.tipo} · ${esc(m.escopo||'ambos')}</span></span>
+      </button>
+      <div class="corpo ${aberto?'':'oculto'}">${aberto?`
+        <div class="formlinha" style="padding-top:14px;margin-bottom:14px">
+          <div class="campo"><label>Nome da matriz</label><input class="ed nm" value="${esc(m.nome)}" onchange="up('categorias','${m.id}','nome',this.value)"></div>
+          <div class="campo"><label>Escopo</label><select class="ed" onchange="up('categorias','${m.id}','escopo',this.value)">${['ambos','empresa','pessoal'].map(e=>`<option value="${e}"${m.escopo===e?' selected':''}>${e}</option>`).join('')}</select></div>
+        </div>
+        ${fs.length?`<table class="cats"><thead><tr><th>Categoria</th><th>Escopo</th><th>Mover para</th><th class="acoes"></th></tr></thead><tbody>
+        ${fs.map(f=>`<tr>
+          <td><input class="ed nm" value="${esc(f.nome)}" onchange="up('categorias','${f.id}','nome',this.value)"></td>
+          <td><select class="ed" onchange="up('categorias','${f.id}','escopo',this.value)">${['ambos','empresa','pessoal'].map(e=>`<option value="${e}"${f.escopo===e?' selected':''}>${e}</option>`).join('')}</select></td>
+          <td><select class="ed" onchange="up('categorias','${f.id}','parent_id',this.value)">${matrizes(f.tipo).map(x=>`<option value="${x.id}"${x.id===f.parent_id?' selected':''}>${esc(x.nome)}</option>`).join('')}</select></td>
+          <td class="acoes"><button class="x" onclick="del('categorias','${f.id}')" aria-label="Remover">✕</button></td>
+        </tr>`).join('')}</tbody></table>`:'<div class="vazio">Nenhuma categoria dentro desta matriz.</div>'}
+        <p class="nota">Renomear aqui não renomeia nos lançamentos antigos, porque eles guardam o nome como texto.</p>`:''}</div>
+    </div>`}).join('')}
+  <div class="cartao" style="margin-top:12px"><div class="formlinha">
+    <div class="campo"><label>Nova categoria</label><input id="ctNome"></div>
+    <div class="campo"><label>Dentro de</label><select id="ctPai">${matrizes('despesa').concat(matrizes('entrada')).map(m=>`<option value="${m.id}">${esc(m.nome)}</option>`).join('')}</select></div>
+    <div class="campo"><label>Escopo</label><select id="ctEsc"><option value="empresa">Empresa</option><option value="pessoal">Pessoal</option><option value="ambos">Ambos</option></select></div>
+    <button class="btn" onclick="novaCategoria()">Adicionar</button>
+  </div></div>`;
+}
+async function concluirOnboarding(){
+  const {error}=await sb.from('config').update({onboarding_ok:true}).eq('id',1);
+  if(error)return toast('Erro: '+error.message,true);
+  D.config.onboarding_ok=true; toast('Pronto. Bom trabalho.'); irPara('dash');
+}
+async function novoPlano(){
+  const nome=document.getElementById('plNome').value.trim();
+  const meses=Math.max(1,+document.getElementById('plMeses').value||1);
+  const parcelas_padrao=Math.max(0,+document.getElementById('plParc').value||0);
+  if(!nome)return toast('Informe o nome do plano.',true);
+  const {data,error}=await sb.from('planos').insert({nome,meses,parcelas_padrao,ordem:D.planos.length+1})
+    .select().single();
+  if(error)return toast('Erro: '+error.message,true);
+  D.planos.push(data); document.getElementById('plNome').value='';
+  toast('Plano criado.'); desenhar();
+}
+async function subirLogo(file){
+  if(!file)return;
+  const nome=`logo-${Date.now()}.${(file.name.split('.').pop()||'png')}`;
+  const {error}=await sb.storage.from('branding').upload(nome,file,{upsert:true});
+  if(error)return toast('Erro ao subir: '+error.message+' (o bucket branding foi criado na migração v4?)',true);
+  const {data}=sb.storage.from('branding').getPublicUrl(nome);
+  document.getElementById('cLogo').value=data.publicUrl;
+  await sb.from('config').update({logo_url:data.publicUrl}).eq('id',1);
+  D.config.logo_url=data.publicUrl; marca(); toast('Logo atualizada.'); desenhar();
+}
+async function novoProduto(){
+  const nome=document.getElementById('prNome').value.trim();
+  if(!nome)return toast('Informe o nome do produto.',true);
+  const {data,error}=await sb.from('produtos').insert({nome,cor:document.getElementById('prCor').value,
+    ordem:D.produtos.length+1}).select().single();
+  if(error)return toast('Erro: '+error.message,true);
+  D.produtos.push(data);document.getElementById('prNome').value='';toast('Produto criado.');desenhar();
+}
+async function apagarProduto(id,contratos){
+  if(contratos>0)return toast(`Esse produto tem ${contratos} contratos ativos. Marque como inativo em vez de apagar.`,true);
+  del('produtos',id);
+}
+async function novaCategoria(){
+  const nome=document.getElementById('ctNome').value.trim();
+  const parent_id=document.getElementById('ctPai').value;
+  if(!nome)return toast('Informe o nome.',true);
+  const pai=D.categorias.find(c=>c.id===parent_id);
+  const {data,error}=await sb.from('categorias').insert({nome,parent_id,tipo:pai?.tipo||'despesa',
+    escopo:document.getElementById('ctEsc').value,matriz:false,ordem:99}).select().single();
+  if(error)return toast('Erro: '+error.message,true);
+  D.categorias.push(data);document.getElementById('ctNome').value='';toast('Categoria criada.');desenhar();
+}
+async function salvarConfig(){
+  const r={negocio:document.getElementById('cNome').value.trim()||'Painel RHINO',
+    razao_social:document.getElementById('cRazao').value.trim(),
+    logo_url:document.getElementById('cLogo').value.trim()||null,
+    cor_primaria:document.getElementById('cCor').value,cor_fundo:document.getElementById('cFundo').value,
+
+    caixa_empresa:+document.getElementById('cCaixa').value||0,
+    meta_mensal:+document.getElementById('cMeta').value||0,
+    aliquota:+document.getElementById('cAliq').value||0,
+    base_declarada:+document.getElementById('cBase').value||0,
+    repasse_meses:document.getElementById('cRepasse').value.trim()||'1,4,7,10',
+    tem_socios:document.getElementById('cSocios').value==='true',
+    socio_nome:document.getElementById('cSocioNome').value.trim()||null,
+    socio_percent:+document.getElementById('cSocioPc').value||0,
+    agente_url:document.getElementById('cAgente').value.trim()||null};
+  const {error}=await sb.from('config').update(r).eq('id',1);
+  if(error)return toast('Erro: '+error.message,true);
+  D.config={...D.config,...r};marca();toast('Configurações salvas.');desenhar();
+}
+
+/* ================= GENÉRICOS ================= */
+async function up(tabela,id,campo,valor){
+  if(!id||id==='undefined'||id==='null')return toast('Registro sem vínculo, não dá para salvar.',true);
+  const {error}=await sb.from(tabela).update({[campo]:valor}).eq('id',id);
+  if(error)return toast('Erro ao salvar: '+error.message,true);
+  const it=D[tabela]?.find(x=>x.id===id);if(it)it[campo]=valor;
+  toast('Salvo.');desenhar();
+}
+const upNum=(t,i,c,v)=>up(t,i,c,+v||0);
+async function del(tabela,id){
+  if(!confirm('Remover? Isso não pode ser desfeito.'))return;
+  const {error}=await sb.from(tabela).delete().eq('id',id);
+  if(error)return toast('Erro ao remover: '+error.message,true);
+  D[tabela]=D[tabela].filter(x=>x.id!==id);
+  if(tabela==='clientes')D.contratos=D.contratos.filter(c=>c.cliente_id!==id);
+  toast('Removido.');desenhar();
+}
+</script>
+</body>
+</html>
