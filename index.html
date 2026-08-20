@@ -255,6 +255,7 @@ table.cats th:nth-child(3),table.cats td:nth-child(3){width:230px}
    ============================================================ */
 const SUPABASE_URL='https://rfmjrpyjrcmmtpxsoarm.supabase.co';
 const SUPABASE_KEY='sb_publishable_TLfif_Zls0KGdFbCORf58A_ce5ItFro';
+
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let USER=null;
 const escCx=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
