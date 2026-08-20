@@ -208,20 +208,7 @@ table.cats th:nth-child(3),table.cats td:nth-child(3){width:230px}
 </head>
 <body>
 
-<div id="conexao" class="oculto"><div class="cxlogin">
-  <div class="rotulo"><span class="q"></span>Primeiro acesso</div>
-  <h1>Conectar ao seu banco</h1>
-  <p>Cole os dois dados do seu projeto Supabase. Eles ficam salvos neste navegador e você não precisa fazer isso de novo.</p>
-  <div class="campo"><label for="cxUrl">Endereço do projeto</label><input id="cxUrl" placeholder="https://xxxxx.supabase.co">
-    <p class="nota" style="margin-top:5px">Pode colar a Project URL inteira, ou só o código que aparece na barra do navegador do Supabase depois de <code>/project/</code>.</p></div>
-  <div class="campo"><label for="cxKey">Chave publishable</label><input id="cxKey" placeholder="sb_publishable_...">
-    <p class="nota" style="margin-top:5px">Project Settings, API Keys. É a de cima, marcada como <strong>Publishable</strong>. Nunca a Secret.</p></div>
-  <button class="btn" id="btConectar" onclick="salvarConexao()" style="width:100%;margin-top:8px">Conectar</button>
-  <div id="erroConexao" class="erro oculto"></div>
-  <p class="nota">Os dois dados ficam guardados só neste navegador. A chave publishable é feita para uso em navegador e não dá acesso a nada sem login.</p>
-</div></div>
-
-<div id="login" class="oculto"><div class="cxlogin">
+<div id="login"><div class="cxlogin">
   <div class="rotulo"><span class="q"></span>Consulting Framework</div>
   <h1>Painel financeiro</h1>
   <p>Entre para ver e lançar os números.</p>
@@ -235,7 +222,6 @@ table.cats th:nth-child(3),table.cats td:nth-child(3){width:230px}
 <header><div class="topo">
   <div class="marca"><img id="logoTopo" class="oculto" alt=""><span class="q" id="qTopo"></span><span class="nome" id="nomeNegocio">Painel RHINO</span></div>
   <select id="selMes" aria-label="Mês"></select>
-  <button class="btnv" onclick="trocarConexao()" title="Esquecer este banco neste navegador">Desconectar</button>
   <button class="btnv" id="btSair">Sair</button>
 </div></header>
 <nav><div class="abas" id="abas">
@@ -261,69 +247,18 @@ table.cats th:nth-child(3),table.cats td:nth-child(3){width:230px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-/* A conexao com o seu Supabase e pedida na primeira vez e fica guardada
-   neste navegador. Voce nao precisa editar nada neste arquivo. */
-const CFG_CHAVE='painel_conexao';
-const escCx=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function lerConexao(){
-  try{const c=JSON.parse(localStorage.getItem(CFG_CHAVE)||'null');
-      return (c&&c.url&&c.key)?c:null;}catch{return null}
-}
-let CONEXAO=lerConexao();
-let SUPABASE_URL=CONEXAO?CONEXAO.url:'';
-let SUPABASE_KEY=CONEXAO?CONEXAO.key:'';
-let sb=CONEXAO?supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
+/* ============================================================
+   CONEXAO DO PRODUTO
+   Troque as duas linhas abaixo pelo projeto Supabase que voce criou
+   para atender os clientes. Um projeto so, separado do seu painel.
+   Depois disso o cliente so recebe o link e entra com e-mail e senha.
+   ============================================================ */
+const SUPABASE_URL='COLE_AQUI_A_URL_DO_PROJETO';   // https://xxxxx.supabase.co
+const SUPABASE_KEY='COLE_AQUI_A_CHAVE_PUBLISHABLE';// sb_publishable_...
 
-/* Aceita qualquer uma destas formas:
-   abcdefghijklm
-   https://abcdefghijklm.supabase.co
-   https://supabase.com/dashboard/project/abcdefghijklm  (colado da barra do navegador) */
-function normalizarUrl(v){
-  let s=String(v||'').trim().replace(/\/+$/,'');
-  if(!s) return null;
-  const painel=s.match(/supabase\.com\/dashboard\/project\/([a-z0-9]{15,})/i);
-  if(painel) return `https://${painel[1].toLowerCase()}.supabase.co`;
-  const completa=s.match(/^https?:\/\/([a-z0-9-]+)\.supabase\.co$/i);
-  if(completa) return `https://${completa[1].toLowerCase()}.supabase.co`;
-  if(/^[a-z0-9]{15,}$/i.test(s)) return `https://${s.toLowerCase()}.supabase.co`;
-  return null;
-}
-/* Antes de salvar, bate na porta do Supabase. Assim o erro aparece aqui,
-   com nome e sobrenome, e nao la na frente como "Failed to fetch". */
-async function testarConexao(url,key){
-  let r;
-  try{
-    r=await fetch(url+'/auth/v1/settings',{headers:{apikey:key,Authorization:'Bearer '+key}});
-  }catch(e){
-    return {ok:false,msg:`Não consegui alcançar ${url}. Confira o código do projeto. `
-      +`Se o endereço estiver certo, o projeto pode estar pausado: abra o painel do Supabase e veja se aparece um botão Restore.`};
-  }
-  if(r.status===401||r.status===403)
-    return {ok:false,msg:'O endereço respondeu, mas recusou a chave. Copie de novo a chave Publishable, inteira.'};
-  if(!r.ok)
-    return {ok:false,msg:`O servidor respondeu com erro ${r.status}. Confira o endereço e a chave.`};
-  return {ok:true};
-}
-async function salvarConexao(){
-  const bt=document.getElementById('btConectar');
-  const url=normalizarUrl(document.getElementById('cxUrl').value);
-  const key=document.getElementById('cxKey').value.trim();
-  const cx=document.getElementById('erroConexao'); cx.classList.add('oculto');
-  const erro=t=>{cx.innerHTML=t;cx.classList.remove('oculto');
-    if(bt){bt.disabled=false;bt.textContent='Conectar';}};
-  if(!url) return erro('Não reconheci esse endereço. Cole a Project URL, ou só o código do projeto que aparece na barra do navegador depois de <code>/project/</code>.');
-  if(/^sb_secret_/i.test(key)) return erro('Essa é a chave secreta. Use a <strong>Publishable</strong>, que começa com <code>sb_publishable_</code>.');
-  if(key.length<20) return erro('A chave parece curta demais. Copie a Publishable inteira, sem cortar.');
-  if(bt){bt.disabled=true;bt.innerHTML='<span class="girando"></span>Testando';}
-  const t=await testarConexao(url,key);
-  if(!t.ok) return erro(t.msg);
-  localStorage.setItem(CFG_CHAVE,JSON.stringify({url,key}));
-  location.reload();
-}
-function trocarConexao(){
-  if(!confirm('Desconectar deste banco? Seus dados continuam no Supabase, só este navegador esquece o endereço.'))return;
-  localStorage.removeItem(CFG_CHAVE); location.reload();
-}
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let USER=null;
+const escCx=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const MESC=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -359,32 +294,27 @@ t.style.cssText=`position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
 document.body.appendChild(t);setTimeout(()=>t.remove(),3200);}
 
 /* ---------- login ---------- */
-if(!sb){document.getElementById('conexao').classList.remove('oculto');}
-else{document.getElementById('login').classList.remove('oculto');}
 document.getElementById('btEntrar').onclick=entrar;
 document.getElementById('senha').onkeydown=e=>{if(e.key==='Enter')entrar()};
 async function entrar(){
   const email=document.getElementById('email').value.trim(), password=document.getElementById('senha').value;
   const cx=document.getElementById('erroLogin'); cx.classList.add('oculto');
   if(!email||!password){cx.textContent='Preencha e-mail e senha.';cx.classList.remove('oculto');return;}
-  const {error}=await sb.auth.signInWithPassword({email,password});
+  const {data:sess,error}=await sb.auth.signInWithPassword({email,password});
   if(error){
     const m=String(error.message||'');
     cx.innerHTML = /Failed to fetch|NetworkError|Load failed/i.test(m)
-      ? `Não consegui falar com o seu banco em <code>${escCx(SUPABASE_URL)}</code>.<br>`
-        +`Confira o endereço, ou veja se o projeto está pausado no Supabase.<br>`
-        +`<button class="btnv" style="margin-top:9px" onclick="trocarConexao()">Corrigir a conexão</button>`
+      ? 'Não consegui falar com o servidor. Verifique sua internet e tente de novo. Se continuar, avise o suporte.'
       : m.includes('Invalid') ? 'E-mail ou senha incorretos. Se você acabou de criar o usuário, confirme que marcou "Auto Confirm User".'
       : escCx(m);
     cx.classList.remove('oculto'); return;}
-  iniciar();
+  USER=sess.user; iniciar();
 }
 document.getElementById('btSair').onclick=async()=>{await sb.auth.signOut();location.reload()};
-if(sb) sb.auth.getSession().then(({data})=>{if(data.session)iniciar()});
+sb.auth.getSession().then(({data})=>{if(data.session){USER=data.session.user;iniciar();}});
 
 async function iniciar(){
   document.getElementById('login').classList.add('oculto');
-  document.getElementById('conexao').classList.add('oculto');
   document.getElementById('app').classList.remove('oculto');
   const s=document.getElementById('selMes');
   for(let i=-13;i<=4;i++){const d=new Date(HOJE.getFullYear(),HOJE.getMonth()+i,1);
@@ -405,7 +335,12 @@ async function carregar(){
   const r=await Promise.all(t.map(x=>sb.from(x).select('*')));
   let faltou=[];
   r.forEach((res,i)=>{if(res.error){faltou.push(t[i]);return;} D[t[i]]=res.data||[];});
-  D.config=(Array.isArray(D.config)&&D.config[0])||D.config||{};
+  D.config=(Array.isArray(D.config)&&D.config[0])||{};
+  if(!D.config.owner_id){
+    // primeira entrada antes do gatilho terminar: cria a linha na hora
+    const {data}=await sb.from('config').insert({}).select().single();
+    if(data) D.config=data;
+  }
   D.produtos.sort((a,b)=>(a.ordem||0)-(b.ordem||0));
   D.categorias.sort((a,b)=>(a.ordem||0)-(b.ordem||0));
   D.planos.sort((a,b)=>(a.ordem||0)-(b.ordem||0));
@@ -1752,7 +1687,7 @@ function verConfig(){
   </div></div>`;
 }
 async function concluirOnboarding(){
-  const {error}=await sb.from('config').update({onboarding_ok:true}).eq('id',1);
+  const {error}=await sb.from('config').update({onboarding_ok:true}).eq('owner_id',USER.id);
   if(error)return toast('Erro: '+error.message,true);
   D.config.onboarding_ok=true; toast('Pronto. Bom trabalho.'); irPara('dash');
 }
@@ -1769,12 +1704,12 @@ async function novoPlano(){
 }
 async function subirLogo(file){
   if(!file)return;
-  const nome=`logo-${Date.now()}.${(file.name.split('.').pop()||'png')}`;
+  const nome=`${USER.id}/logo-${Date.now()}.${(file.name.split('.').pop()||'png')}`;
   const {error}=await sb.storage.from('branding').upload(nome,file,{upsert:true});
   if(error)return toast('Erro ao subir: '+error.message+' (o bucket branding foi criado na migração v4?)',true);
   const {data}=sb.storage.from('branding').getPublicUrl(nome);
   document.getElementById('cLogo').value=data.publicUrl;
-  await sb.from('config').update({logo_url:data.publicUrl}).eq('id',1);
+  await sb.from('config').update({logo_url:data.publicUrl}).eq('owner_id',USER.id);
   D.config.logo_url=data.publicUrl; marca(); toast('Logo atualizada.'); desenhar();
 }
 async function novoProduto(){
@@ -1814,7 +1749,7 @@ async function salvarConfig(){
     socio_nome:document.getElementById('cSocioNome').value.trim()||null,
     socio_percent:+document.getElementById('cSocioPc').value||0,
     agente_url:document.getElementById('cAgente').value.trim()||null};
-  const {error}=await sb.from('config').update(r).eq('id',1);
+  const {error}=await sb.from('config').update(r).eq('owner_id',USER.id);
   if(error)return toast('Erro: '+error.message,true);
   D.config={...D.config,...r};marca();toast('Configurações salvas.');desenhar();
 }
